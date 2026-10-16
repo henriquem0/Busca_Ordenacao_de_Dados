@@ -22,6 +22,6 @@ ITEM *pilha_desempilhar(PILHA *pilha);
 int pilha_tamanho(const PILHA *pilha);
 
 // Permite consultar um item por indicie(necessario para a busca)
-ITEM *pilha_obter(const PILHA *pilha, ind indice);
+ITEM *pilha_obter(const PILHA *pilha, int indice);
 
 #endif
