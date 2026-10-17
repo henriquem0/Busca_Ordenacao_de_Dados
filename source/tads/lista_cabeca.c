@@ -24,10 +24,10 @@ struct lista_cabeca{
     NO *percurso; // cursor usado por reiniciar/proximo
 };
 
-// Compara a designacao do item com o texto procurado
-static bool mesma_designacao(const ITEM *item, const char *designacao){
-    const char *designacao_item = item_get_designation(item);
-    return designacao_item != NULL && strcmp(designacao_item, designacao) == 0;
+// Compara o identificador do item com o texto procurado
+static bool mesmo_identificador(const ITEM *item, const char *identificador){
+    const char *identificador_item = item_get_identificador(item);
+    return identificador_item != NULL && strcmp(identificador_item, identificador) == 0;
 }
 
 // Cria a lista com o no cabeca
@@ -96,14 +96,14 @@ bool lista_cabeca_inserir(LISTA_CABECA *lista, ITEM *item){
     return true;
 }
 
-// Busca sequencial pela designacao, comecando depois do no cabeca
-ITEM *lista_cabeca_buscar(const LISTA_CABECA *lista, const char *designacao){
-    if(lista == NULL || designacao == NULL){
+// Busca sequencial pelo identificador, comecando depois do no cabeca
+ITEM *lista_cabeca_buscar(const LISTA_CABECA *lista, const char *identificador){
+    if(lista == NULL || identificador == NULL){
         return NULL;
     }
     NO *atual = lista->cabeca->proximo;
     while(atual != NULL){
-        if(mesma_designacao(atual->item, designacao)){
+        if(mesmo_identificador(atual->item, identificador)){
             return atual->item;
         }
         atual = atual->proximo;
@@ -111,16 +111,16 @@ ITEM *lista_cabeca_buscar(const LISTA_CABECA *lista, const char *designacao){
     return NULL;
 }
 
-// Remove pela designacao. A busca procura o ANTERIOR do no que sera removido,
+// Remove pelo identificador. A busca procura o ANTERIOR do no que sera removido,
 // comecando na cabeca. Assim remover o primeiro item e igual a remover
 // qualquer outro: nao existe caso especial.
-ITEM *lista_cabeca_remover(LISTA_CABECA *lista, const char *designacao){
-    if(lista == NULL || designacao == NULL){
+ITEM *lista_cabeca_remover(LISTA_CABECA *lista, const char *identificador){
+    if(lista == NULL || identificador == NULL){
         return NULL;
     }
     NO *anterior = lista->cabeca;
     while(anterior->proximo != NULL &&
-          !mesma_designacao(anterior->proximo->item, designacao)){
+          !mesmo_identificador(anterior->proximo->item, identificador)){
         anterior = anterior->proximo;
     }
     NO *removido = anterior->proximo;

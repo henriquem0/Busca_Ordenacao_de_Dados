@@ -18,13 +18,13 @@ void lista_enc_apagar_sem_itens(LISTA_ENC **lista);
 // Insere um item no fim da lista (custo O(1) porque a lista guarda o ponteiro fim)
 bool lista_enc_inserir(LISTA_ENC *lista, ITEM *item);
 
-// Busca o primeiro item com a designacao informada (o item continua na lista)
-ITEM *lista_enc_buscar(const LISTA_ENC *lista, const char *designacao);
+// Busca o primeiro item com o identificador informado (o item continua na lista)
+ITEM *lista_enc_buscar(const LISTA_ENC *lista, const char *identificador);
 
-// Remove o primeiro item com a designacao informada e devolve ele
+// Remove o primeiro item com o identificador informado e devolve ele
 // (quem chamou passa a ser dono do item). Devolve NULL se nao achar.
 // Depois de remover, o percurso volta para o inicio da lista.
-ITEM *lista_enc_remover(LISTA_ENC *lista, const char *designacao);
+ITEM *lista_enc_remover(LISTA_ENC *lista, const char *identificador);
 
 // Retorna a quantidade atual de itens na lista
 int lista_enc_tamanho(const LISTA_ENC *lista);

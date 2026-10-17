@@ -23,8 +23,8 @@ void lista_gen_apagar_sem_itens(LISTA_GEN **lista); //destroi so a lista, os ite
 // com qualquer campo de qualquer dataset (numeros devem ser convertidos antes).
 bool lista_gen_inserir(LISTA_GEN *lista, ITEM *item, const char *nome_grupo, const char *nome_subgrupo);
 
-//busca o primeiro item com a designacao informada (o item continua na lista)
-ITEM *lista_gen_buscar(const LISTA_GEN *lista, const char *designacao);
+//busca o primeiro item com o identificador informado (o item continua na lista)
+ITEM *lista_gen_buscar(const LISTA_GEN *lista, const char *identificador);
 
 // retorna a quantidade total de itens (somando todos os grupos)
 int lista_gen_tamanho(const LISTA_GEN *lista);
