@@ -20,10 +20,10 @@ struct lista_ord{
     NO *percurso; // cursor usado por reiniciar/proximo
 };
 
-// Compara a designacao do item com o texto procurado
-static bool mesma_designacao(const ITEM *item, const char *designacao){
-    const char *designacao_item = item_get_designation(item);
-    return designacao_item != NULL && strcmp(designacao_item, designacao) == 0;
+// Compara o identificador do item com o texto procurado
+static bool mesmo_identificador(const ITEM *item, const char *identificador){
+    const char *identificador_item = item_get_identificador(item);
+    return identificador_item != NULL && strcmp(identificador_item, identificador) == 0;
 }
 
 // Diz se um no que ja esta na lista deve ficar ANTES do item novo.
@@ -122,15 +122,15 @@ bool lista_ord_inserir(LISTA_ORD *lista, ITEM *item, double chave){
     return true;
 }
 
-// Busca sequencial pela designacao (a chave de ordem nao e a designacao,
+// Busca sequencial pelo identificador (a chave de ordem nao e o identificador,
 // entao nao da para parar antes do fim)
-ITEM *lista_ord_buscar(const LISTA_ORD *lista, const char *designacao){
-    if(lista == NULL || designacao == NULL){
+ITEM *lista_ord_buscar(const LISTA_ORD *lista, const char *identificador){
+    if(lista == NULL || identificador == NULL){
         return NULL;
     }
     NO *atual = lista->inicio;
     while(atual != NULL){
-        if(mesma_designacao(atual->item, designacao)){
+        if(mesmo_identificador(atual->item, identificador)){
             return atual->item;
         }
         atual = atual->proximo;
@@ -138,14 +138,14 @@ ITEM *lista_ord_buscar(const LISTA_ORD *lista, const char *designacao){
     return NULL;
 }
 
-// Remove pela designacao, guardando o no anterior durante a busca
-ITEM *lista_ord_remover(LISTA_ORD *lista, const char *designacao){
-    if(lista == NULL || designacao == NULL){
+// Remove pelo identificador, guardando o no anterior durante a busca
+ITEM *lista_ord_remover(LISTA_ORD *lista, const char *identificador){
+    if(lista == NULL || identificador == NULL){
         return NULL;
     }
     NO *anterior = NULL;
     NO *atual = lista->inicio;
-    while(atual != NULL && !mesma_designacao(atual->item, designacao)){
+    while(atual != NULL && !mesmo_identificador(atual->item, identificador)){
         anterior = atual;
         atual = atual->proximo;
     }

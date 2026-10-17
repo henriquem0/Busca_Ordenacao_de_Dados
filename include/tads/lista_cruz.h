@@ -31,7 +31,7 @@ void lista_cruz_apagar_sem_itens(LISTA_CRUZ **lista);//destroi so a lista mas os
 bool lista_cruz_inserir(LISTA_CRUZ *lista, ITEM *item, const char *chave_a, const char *chave_b);
 
 
-ITEM *lista_cruz_buscar(const LISTA_CRUZ *lista, const char *designacao);// busca o primeiro item com a designacao informada (o item continua na lista)
+ITEM *lista_cruz_buscar(const LISTA_CRUZ *lista, const char *identificador);// busca o primeiro item com o identificador informado (o item continua na lista)
 
 
 int lista_cruz_tamanho(const LISTA_CRUZ *lista); //retorna a quantidade de itens (cada item conta uma vez, nao uma por eixo)

@@ -12,16 +12,16 @@ struct lista_seq{
     int capacidade; // tamanho alocado no vetor
 };
 
-// Compara a designacao do item com o texto procurado
-static bool mesma_designacao(const ITEM *item, const char *designacao){
-    const char *designacao_item = item_get_designation(item);
-    return designacao_item != NULL && strcmp(designacao_item, designacao) == 0;
+// Compara o identificador do item com o texto procurado
+static bool mesmo_identificador(const ITEM *item, const char *identificador){
+    const char *identificador_item = item_get_identificador(item);
+    return identificador_item != NULL && strcmp(identificador_item, identificador) == 0;
 }
 
-// Procura a posicao do primeiro item com a designacao. Devolve -1 se nao achar.
-static int lista_seq_posicao(const LISTA_SEQ *lista, const char *designacao){
+// Procura a posicao do primeiro item com o identificador. Devolve -1 se nao achar.
+static int lista_seq_posicao(const LISTA_SEQ *lista, const char *identificador){
     for(int i = 0; i < lista->tamanho; i++){
-        if(mesma_designacao(lista->item[i], designacao)){
+        if(mesmo_identificador(lista->item[i], identificador)){
             return i;
         }
     }
@@ -89,25 +89,25 @@ bool lista_seq_inserir(LISTA_SEQ *lista, ITEM *item){
     return true;
 }
 
-// Busca sequencial pela designacao, custo O(n)
-ITEM *lista_seq_buscar(const LISTA_SEQ *lista, const char *designacao){
-    if(lista == NULL || designacao == NULL){
+// Busca sequencial pelo identificador, custo O(n)
+ITEM *lista_seq_buscar(const LISTA_SEQ *lista, const char *identificador){
+    if(lista == NULL || identificador == NULL){
         return NULL;
     }
-    int posicao = lista_seq_posicao(lista, designacao);
+    int posicao = lista_seq_posicao(lista, identificador);
     if(posicao < 0){
         return NULL;
     }
     return lista->item[posicao];
 }
 
-// Remove pela designacao. Os itens da direita deslocam uma posicao para a esquerda,
+// Remove pelo identificador. Os itens da direita deslocam uma posicao para a esquerda,
 // por isso o custo e O(n).
-ITEM *lista_seq_remover(LISTA_SEQ *lista, const char *designacao){
-    if(lista == NULL || designacao == NULL){
+ITEM *lista_seq_remover(LISTA_SEQ *lista, const char *identificador){
+    if(lista == NULL || identificador == NULL){
         return NULL;
     }
-    int posicao = lista_seq_posicao(lista, designacao);
+    int posicao = lista_seq_posicao(lista, identificador);
     if(posicao < 0){
         return NULL;
     }

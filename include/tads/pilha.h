@@ -9,8 +9,11 @@ typedef struct pilha PILHA;
 // Cria e inicializa a pilha
 PILHA *pilha_criar(void);
 
-// Destroi a pilha e libera a memoria
+// Destroi a pilha e libera a memoria (incluindo os itens guardados nela)
 void pilha_apagar(PILHA **pilha);
+
+// Destroi so a pilha, os itens continuam existindo (usado na estrutura de resultado)
+void pilha_apagar_sem_itens(PILHA **pilha);
 
 // Insere (empilha) um item no topo da pilha
 bool pilha_empilhar(PILHA *pilha, ITEM *item);

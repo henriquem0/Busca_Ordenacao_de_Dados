@@ -20,13 +20,13 @@ void lista_ord_apagar_sem_itens(LISTA_ORD **lista);
 // a similaridade). Chaves iguais ficam na ordem de chegada. Custo O(n).
 bool lista_ord_inserir(LISTA_ORD *lista, ITEM *item, double chave);
 
-// Busca o primeiro item com a designacao informada (o item continua na lista)
-ITEM *lista_ord_buscar(const LISTA_ORD *lista, const char *designacao);
+// Busca o primeiro item com o identificador informado (o item continua na lista)
+ITEM *lista_ord_buscar(const LISTA_ORD *lista, const char *identificador);
 
-// Remove o primeiro item com a designacao informada e devolve ele
+// Remove o primeiro item com o identificador informado e devolve ele
 // (quem chamou passa a ser dono do item). Devolve NULL se nao achar.
 // Depois de remover, o percurso volta para o inicio da lista.
-ITEM *lista_ord_remover(LISTA_ORD *lista, const char *designacao);
+ITEM *lista_ord_remover(LISTA_ORD *lista, const char *identificador);
 
 // Retorna a quantidade atual de itens na lista
 int lista_ord_tamanho(const LISTA_ORD *lista);

@@ -49,10 +49,10 @@ static char *copiar_texto(const char *texto){
     return copia;
 }
 
-// Compara a designacao do item com o texto procurado
-static bool mesma_designacao(const ITEM *item, const char *designacao){
-    const char *designacao_item = item_get_designation(item);
-    return designacao_item != NULL && strcmp(designacao_item, designacao) == 0;
+// Compara o identificador do item com o texto procurado
+static bool mesmo_identificador(const ITEM *item, const char *identificador){
+    const char *identificador_item = item_get_identificador(item);
+    return identificador_item != NULL && strcmp(identificador_item, identificador) == 0;
 }
 
 // Procura um grupo pelo nome. Devolve NULL se ele ainda nao existe.
@@ -223,16 +223,16 @@ bool lista_gen_inserir(LISTA_GEN *lista, ITEM *item,
     return true;
 }
 
-// Busca por designacao percorrendo todos os grupos e subgrupos, custo O(n)
-ITEM *lista_gen_buscar(const LISTA_GEN *lista, const char *designacao){
-    if(lista == NULL || designacao == NULL){
+// Busca por identificador percorrendo todos os grupos e subgrupos, custo O(n)
+ITEM *lista_gen_buscar(const LISTA_GEN *lista, const char *identificador){
+    if(lista == NULL || identificador == NULL){
         return NULL;
     }
     for(GRUPO *grupo = lista->primeiro_grupo; grupo != NULL; grupo = grupo->proximo){
         for(SUBGRUPO *subgrupo = grupo->primeiro_subgrupo; subgrupo != NULL;
             subgrupo = subgrupo->proximo){
             for(NO_GEN *no = subgrupo->primeiro; no != NULL; no = no->proximo){
-                if(mesma_designacao(no->item, designacao)){
+                if(mesmo_identificador(no->item, identificador)){
                     return no->item;
                 }
             }

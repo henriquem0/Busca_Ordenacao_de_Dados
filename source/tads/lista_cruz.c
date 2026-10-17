@@ -42,10 +42,10 @@ static char *copiar_texto(const char *texto){
     return copia;
 }
 
-// Compara a designacao do item com o texto procurado
-static bool mesma_designacao(const ITEM *item, const char *designacao){
-    const char *designacao_item = item_get_designation(item);
-    return designacao_item != NULL && strcmp(designacao_item, designacao) == 0;
+// Compara o identificador do item com o texto procurado
+static bool mesmo_identificador(const ITEM *item, const char *identificador){
+    const char *identificador_item = item_get_identificador(item);
+    return identificador_item != NULL && strcmp(identificador_item, identificador) == 0;
 }
 
 // Confere se o eixo recebido e valido
@@ -189,15 +189,15 @@ bool lista_cruz_inserir(LISTA_CRUZ *lista, ITEM *item,
     return true;
 }
 
-// Busca por designacao percorrendo as cadeias do eixo A, custo O(n)
-ITEM *lista_cruz_buscar(const LISTA_CRUZ *lista, const char *designacao){
-    if(lista == NULL || designacao == NULL){
+// Busca por identificador percorrendo as cadeias do eixo A, custo O(n)
+ITEM *lista_cruz_buscar(const LISTA_CRUZ *lista, const char *identificador){
+    if(lista == NULL || identificador == NULL){
         return NULL;
     }
     for(CABECA_CADEIA *cabeca = lista->primeira[LISTA_CRUZ_EIXO_A]; cabeca != NULL;
         cabeca = cabeca->proxima){
         for(NO_CRUZ *no = cabeca->primeiro; no != NULL; no = no->proximo[LISTA_CRUZ_EIXO_A]){
-            if(mesma_designacao(no->item, designacao)){
+            if(mesmo_identificador(no->item, identificador)){
                 return no->item;
             }
         }
