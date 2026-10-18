@@ -164,14 +164,14 @@ int main(int argc, char *argv[]){
     write_ms = agora_ms() - inicio;
 
     // ====== etapa 05: relatorio final ========
-    printf("STATUS=OK\n");                      // indica que a execucao ocorreu sem erros
-    printf("INPUT_RECORDS=%d\n", total_lidos);  // quantidade total de registros lidos do csv de entrada
-    printf("MATCHED_RECORDS=%d\n", matched_records); // quantidade de registros que atenderam aos filtros da consulta
-    printf("OUTPUT_RECORDS=%d\n", output_records);   // quantidade de registros efetivamente gravados no arquivo de saida (respeitando o --top-k)
-    printf("LOAD_MS=%.3f\n", load_ms);          // tempo da etapa de carga do dataset na memoria
-    printf("SEARCH_MS=%.3f\n", search_ms);      // tempo de execucao da consulta/busca na estrutura --base
+    printf("STATUS=OK\n");                               // indica que a execucao ocorreu sem erros
+    printf("INPUT_RECORDS=%d\n", total_lidos);           // quantidade total de registros lidos do csv de entrada
+    printf("MATCHED_RECORDS=%d\n", matched_records);     // quantidade de registros que atenderam aos filtros da consulta
+    printf("OUTPUT_RECORDS=%d\n", output_records);       // quantidade de registros efetivamente gravados no arquivo de saida (respeitando o --top-k)
+    printf("LOAD_MS=%.3f\n", load_ms);                   // tempo da etapa de carga do dataset na memoria
+    printf("SEARCH_MS=%.3f\n", search_ms);               // tempo de execucao da consulta/busca na estrutura --base
     printf("RESULT_INSERT_MS=%.3f\n", result_insert_ms); // tempo gasto inserindo os resultados na estrutura
-    printf("WRITE_MS=%.3f\n", write_ms);        // tempo de gravacao do arquivo csv de saida
+    printf("WRITE_MS=%.3f\n", write_ms);                 // tempo de gravacao do arquivo csv de saida
 
     // limpeza de memoria
     liberar_recursos(&resultado, &base, &query, aceitos, similaridades);
