@@ -7,16 +7,11 @@
 typedef struct no NO;
 
 struct no{
-    ITEM *item; // no cabeca guarda NULL aqui: ele nao representa um registro
+    ITEM *item; // no cabeca guarda null aqui: ele nao representa um registro
     NO *proximo;
 };
 
-/* Invariantes da lista:
-   - cabeca existe enquanto a lista existir (nunca e NULL)
-   - lista vazia: cabeca->proximo == NULL, fim == cabeca e tamanho == 0
-   - lista nao vazia: cabeca->proximo e o primeiro item e fim e o ultimo no
-   Com fim == cabeca na lista vazia, inserir sempre faz fim->proximo = novo,
-   sem precisar de um caso especial para o primeiro elemento. */
+// invariantes da lista: - cabeca existe enquanto a lista existir (nunca e null) - lista vazia: cabeca->proximo == null, fim == cabeca e tamanho == 0 - lista nao vazia: cabeca->proximo e o primeiro item e fim e o ultimo no com fim == cabeca na lista vazia, inserir sempre faz fim->proximo = novo, sem precisar de um caso especial para o primeiro elemento.
 struct lista_cabeca{
     NO *cabeca;
     NO *fim;
@@ -24,19 +19,19 @@ struct lista_cabeca{
     NO *percurso; // cursor usado por reiniciar/proximo
 };
 
-// Compara o identificador do item com o texto procurado
+// compara o identificador do item com o texto procurado
 static bool mesmo_identificador(const ITEM *item, const char *identificador){
     const char *identificador_item = item_get_identificador(item);
     return identificador_item != NULL && strcmp(identificador_item, identificador) == 0;
 }
 
-// Cria a lista com o no cabeca
+// cria a lista com o no cabeca
 LISTA_CABECA *lista_cabeca_criar(void){
-    LISTA_CABECA *lista = (LISTA_CABECA *)malloc(sizeof(LISTA_CABECA));
+    LISTA_CABECA *lista = (LISTA_CABECA *)malloc(sizeof(LISTA_CABECA)); // reserva o controle da lista
     if(lista == NULL){
         return NULL;
     }
-    lista->cabeca = (NO *)malloc(sizeof(NO));
+    lista->cabeca = (NO *)malloc(sizeof(NO)); // cria o no sentinela
     if(lista->cabeca == NULL){
         free(lista); // desfaz a primeira alocacao
         return NULL;
@@ -49,7 +44,7 @@ LISTA_CABECA *lista_cabeca_criar(void){
     return lista;
 }
 
-// Libera a lista. Se apagar_itens for true, os itens tambem sao apagados
+// libera a lista. se apagar_itens for true, os itens tambem sao apagados
 static void lista_cabeca_liberar(LISTA_CABECA **lista, bool apagar_itens){
     if(lista == NULL || *lista == NULL){
         return;
@@ -68,17 +63,17 @@ static void lista_cabeca_liberar(LISTA_CABECA **lista, bool apagar_itens){
     *lista = NULL;
 }
 
-// Destroi a lista e libera a memoria
+// destroi a lista e libera a memoria
 void lista_cabeca_apagar(LISTA_CABECA **lista){
     lista_cabeca_liberar(lista, true);
 }
 
-// Destroi so a lista, os itens continuam existindo
+// destroi so a lista, os itens continuam existindo
 void lista_cabeca_apagar_sem_itens(LISTA_CABECA **lista){
     lista_cabeca_liberar(lista, false);
 }
 
-// Insere no fim da lista
+// insere no fim da lista
 bool lista_cabeca_inserir(LISTA_CABECA *lista, ITEM *item){
     if(lista == NULL || item == NULL){
         return false;
@@ -90,13 +85,13 @@ bool lista_cabeca_inserir(LISTA_CABECA *lista, ITEM *item){
     novo->item = item;
     novo->proximo = NULL;
 
-    lista->fim->proximo = novo; // vale tambem para lista vazia (fim e a cabeca)
+    lista->fim->proximo = novo; // liga o ultimo no ao novo item
     lista->fim = novo;
     lista->tamanho++;
     return true;
 }
 
-// Busca sequencial pelo identificador, comecando depois do no cabeca
+// busca sequencial pelo identificador, comecando depois do no cabeca
 ITEM *lista_cabeca_buscar(const LISTA_CABECA *lista, const char *identificador){
     if(lista == NULL || identificador == NULL){
         return NULL;
@@ -111,9 +106,7 @@ ITEM *lista_cabeca_buscar(const LISTA_CABECA *lista, const char *identificador){
     return NULL;
 }
 
-// Remove pelo identificador. A busca procura o ANTERIOR do no que sera removido,
-// comecando na cabeca. Assim remover o primeiro item e igual a remover
-// qualquer outro: nao existe caso especial.
+// remove pelo identificador. a busca procura o anterior do no que sera removido, comecando na cabeca. assim remover o primeiro item e igual a remover qualquer outro: nao existe caso especial.
 ITEM *lista_cabeca_remover(LISTA_CABECA *lista, const char *identificador){
     if(lista == NULL || identificador == NULL){
         return NULL;
@@ -128,7 +121,7 @@ ITEM *lista_cabeca_remover(LISTA_CABECA *lista, const char *identificador){
         return NULL; // nao encontrou
     }
 
-    anterior->proximo = removido->proximo;
+    anterior->proximo = removido->proximo; // retira o no da cadeia
     if(removido == lista->fim){
         lista->fim = anterior; // vira a cabeca se a lista ficou vazia
     }
@@ -140,7 +133,7 @@ ITEM *lista_cabeca_remover(LISTA_CABECA *lista, const char *identificador){
     return item;
 }
 
-// Retorna a quantidade atual de itens na lista
+// retorna a quantidade atual de itens na lista
 int lista_cabeca_tamanho(const LISTA_CABECA *lista){
     if(lista == NULL){
         return 0;
@@ -148,19 +141,19 @@ int lista_cabeca_tamanho(const LISTA_CABECA *lista){
     return lista->tamanho;
 }
 
-// Coloca o cursor no primeiro item (o no depois da cabeca)
+// coloca o cursor no primeiro item (o no depois da cabeca)
 void lista_cabeca_reiniciar(LISTA_CABECA *lista){
     if(lista != NULL){
         lista->percurso = lista->cabeca->proximo;
     }
 }
 
-// Devolve o item do cursor e avanca para o proximo no
+// devolve o item do cursor e avanca para o proximo no
 ITEM *lista_cabeca_proximo(LISTA_CABECA *lista){
     if(lista == NULL || lista->percurso == NULL){
         return NULL;
     }
     ITEM *item = lista->percurso->item;
-    lista->percurso = lista->percurso->proximo;
+    lista->percurso = lista->percurso->proximo; // avanca o cursor da lista
     return item;
 }

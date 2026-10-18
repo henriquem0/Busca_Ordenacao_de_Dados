@@ -22,31 +22,31 @@ typedef struct{
 }SimRule;
 
 struct query{
-    //------- FILTER --------
+    //filter
     FilterRule filtros[MAX_REGRAS];
     int qtda_filtros;
 
-    //------- SIM --------
+    //sim
     SimRule sims[MAX_REGRAS];
     int qtda_sims;
 
-    //------- ACCEPT --------
+    //accept 
     double limiar_accept;
 
-    //------- ORDER --------
+    //order 
     char campo_order[TAM_TEXTO]; 
     char sentido[8];
 
-    //------- GROUP --------
+    //group 
     char campo_group1[TAM_TEXTO];
     char campo_group2[TAM_TEXTO];
 
-    //------- CROSS --------
+    //cross 
     char campo_cross1[TAM_TEXTO];
     char campo_cross2[TAM_TEXTO];
 };
 
-// Remove espacos e tabulacoes do comeco e do fim do texto (altera o proprio texto)
+// remove espacos e tabulacoes do comeco e do fim do texto (altera o proprio texto)
 static void tirar_espacos(char *texto){
     int inicio = 0;
     while(texto[inicio] != '\0' && isspace((unsigned char)texto[inicio])){
@@ -60,13 +60,13 @@ static void tirar_espacos(char *texto){
     texto[fim - inicio] = '\0';
 }
 
-// Copia o texto para o destino sem estourar o tamanho dele
+// copia o texto para o destino sem estourar o tamanho dele
 static void copiar_seguro(char *destino, const char *origem, int tamanho){
     strncpy(destino, origem, tamanho - 1);
     destino[tamanho - 1] = '\0';
 }
 
-// Pega o proximo pedaco da linha separado por '|', ja sem espacos nas pontas
+// pega o proximo pedaco da linha separado por '|', ja sem espacos nas pontas
 static char *proximo_pedaco(void){
     char *pedaco = strtok(NULL, "|");
     if(pedaco != NULL){
@@ -75,56 +75,52 @@ static char *proximo_pedaco(void){
     return pedaco;
 }
 
-// Cria e carrega as regras a partir do arquivo de consulta (.txt)
+// cria e carrega as regras a partir do arquivo de consulta (.txt)
 QUERY *query_carregar(const char *caminho_query){
     if(caminho_query == NULL){
         return NULL;
     }
-    FILE *fp = fopen(caminho_query, "r");
+    FILE *fp = fopen(caminho_query, "r"); // abre o arquivo de regras para leitura
     if(fp == NULL){
         return NULL; 
     }
-    QUERY *q = (QUERY *)malloc(sizeof(QUERY));
+    QUERY *q = (QUERY *)malloc(sizeof(QUERY)); // reserva memoria para guardar as regras
     if(q == NULL){
         fclose(fp);
         return NULL;
     }
-    q->qtda_filtros = 0; //evita que leem lixo de memoria, melhor inicializar com zero
+    q->qtda_filtros = 0; // evita que leem lixo de memoria, melhor inicializar com zero
     q->qtda_sims = 0;
     q->limiar_accept = 0.0;
     q->campo_order[0] = '\0';
-    strcpy(q->sentido, "DESC");
+    strcpy(q->sentido, "DESC"); // define a ordenacao decrescente como padrao
     q->campo_group1[0] = '\0';
     q->campo_group2[0] = '\0';
     q->campo_cross1[0] = '\0';
     q->campo_cross2[0] = '\0';
 
-    char linha[1024]; //buffer, um vetor temporario para guardar os caracteres
-    while(fgets(linha,sizeof(linha), fp) != NULL){
-        //Varredura para remover o '\r' ou '\n' do final de cada uma das linhas
-        //strcspn (string complement span): a string 2 contem o/os caracteres que estou procurando
-        //e na string 1 e analisado se esse caractere e encontrado, se sim pode ser substituido por outro,
-        //como, nesse caso, o '\0'
-        linha[strcspn(linha, "\r\n")] = '\0';
+    char linha[1024]; // buffer, um vetor temporario para guardar os caracteres
+    while(fgets(linha,sizeof(linha), fp) != NULL){ // varredura para remover o '\r' ou '\n' do final de cada uma das linhas strcspn (string complement span): a string 2 contem o/os caracteres que estou procurando e na string 1 e analisado se esse caractere e encontrado, se sim pode ser substituido por outro, como, nesse caso, o '\0'
+        linha[strcspn(linha, "\r\n")] = '\0'; // remove a quebra de linha do comando
 
-        char *cmd = strtok(linha, "|");
+        char *cmd = strtok(linha, "|"); // separa o tipo de regra do restante da linha
         if(cmd == NULL){
             continue; // linha em branco
         }
         tirar_espacos(cmd);
 
         if(strcmp(cmd,"FILTER") == 0){
-            char *campo_filt = proximo_pedaco(); //por exemplo "is_future_event"
-            char *oper = proximo_pedaco(); //por exemplo '<='
-            char *val = proximo_pedaco(); //por exemplo "true"
+            char *campo_filt = proximo_pedaco(); // por exemplo "is_future_event"
+            char *oper = proximo_pedaco(); // por exemplo '<='
+            char *val = proximo_pedaco(); // por exemplo "true"
 
-            // 1) Verifica se todos os campos existem e se e menor que o maximo de filtros
-            if(campo_filt && oper && val && strlen(oper) <= 2 && q->qtda_filtros < MAX_REGRAS){
-                // 2) Copia os textos para struct na posicao atual  
+            // 1) verifica se todos os campos existem e se e menor que o maximo de filtros
+            if(campo_filt && oper && val && strlen(oper) <= 2 && q->qtda_filtros < MAX_REGRAS){ // valida e limita os filtros
+                // 2) copia os textos para struct na posicao atual
                 FilterRule *regra = &q->filtros[q->qtda_filtros];
-                copiar_seguro(regra->campo_filter, campo_filt, TAM_TEXTO);
-                copiar_seguro(regra->operador, oper, 3);
-                copiar_seguro(regra->valor, val, TAM_TEXTO);
+                copiar_seguro(regra->campo_filter, campo_filt, TAM_TEXTO); // copia o campo com limite
+                copiar_seguro(regra->operador, oper, 3); // copia o operador com terminador
+                copiar_seguro(regra->valor, val, TAM_TEXTO); // copia o valor do filtro
                 q->qtda_filtros++;
             }
         }
@@ -135,13 +131,12 @@ QUERY *query_carregar(const char *caminho_query){
             char *peso_str = proximo_pedaco();
 
             if(campo_sim && alvo_str && tolerancia_str && peso_str && q->qtda_sims < MAX_REGRAS){
-                //Necessario para transformar a string em um valor double.
-                //Utilizacao do atof: que tranforma string em um float.
+                // necessario para transformar a string em um valor double. utilizacao do atof: que tranforma string em um float.
                 SimRule *regra = &q->sims[q->qtda_sims];
                 copiar_seguro(regra->campo_sim, campo_sim, TAM_TEXTO);
-                regra->alvo = atof(alvo_str);
-                regra->tolerancia = atof(tolerancia_str);
-                regra->peso = atof(peso_str);
+                regra->alvo = atof(alvo_str); // converte o alvo para numero
+                regra->tolerancia = atof(tolerancia_str); // converte a tolerancia para numero
+                regra->peso = atof(peso_str); // converte o peso para numero
                 q->qtda_sims++;
             }
         }
@@ -149,7 +144,7 @@ QUERY *query_carregar(const char *caminho_query){
             char *limiar_str = proximo_pedaco();
 
             if(limiar_str != NULL) {
-                q->limiar_accept = atof(limiar_str);
+                q->limiar_accept = atof(limiar_str); // converte o limite de aceitacao
             }
         }
         else if(strcmp(cmd,"ORDER") == 0){
@@ -186,34 +181,37 @@ QUERY *query_carregar(const char *caminho_query){
             }
         }
     }
-    fclose(fp);
+    fclose(fp); // fecha o arquivo depois de carregar as regras
     return q;
 }
 
-// Apaga o TAD Query e libera a memoria
+// apaga o tad query e libera a memoria
 void query_apagar(QUERY **q){
     if(q == NULL || *q == NULL){
         return;
     }
-    free(*q); // Libera a struct query alocada no malloc
-    *q = NULL; // Zera o ponteiro original para evitar ponteiro pendente (dangling pointer)
+    free(*q); // libera a struct query alocada no malloc
+    *q = NULL; // zera o ponteiro original para evitar ponteiro pendente (dangling pointer)
 }
 
-// Aplica o operador entre dois numeros
+// aplica o operador entre dois numeros
 static bool comparar_numeros(double valor_item, const char *operador, double valor_regra){
-    if(strcmp(operador, "==") == 0) return fabs(valor_item - valor_regra) < 1e-9;
+    if(strcmp(operador, "==") == 0) return fabs(valor_item - valor_regra) < 1e-9; //fabs calcula o modulo
+
     if(strcmp(operador, "!=") == 0) return fabs(valor_item - valor_regra) >= 1e-9;
+
     if(strcmp(operador, "<=") == 0) return valor_item <= valor_regra;
+
     if(strcmp(operador, ">=") == 0) return valor_item >= valor_regra;
+
     if(strcmp(operador, "<") == 0)  return valor_item < valor_regra;
+
     if(strcmp(operador, ">") == 0)  return valor_item > valor_regra;
+
     return false; // operador desconhecido nunca aceita
 }
 
-/* Avalia um FILTER para o item.
-   - campo ausente (vazio) reprova o item
-   - se os dois lados forem numeros (ou true/false), compara como numero
-   - senao compara como texto, e so "==" e "!=" fazem sentido */
+// avalia um filter para o item. - campo ausente (vazio) reprova o item - se os dois lados forem numeros (ou true/false), compara como numero - senao compara como texto, e so "==" e "!=" fazem sentido
 static bool avaliar_filtro(const FilterRule *regra, const ITEM *item){
     const char *valor_item = item_get_campo(item, regra->campo_filter);
     if(valor_item == NULL){
@@ -249,21 +247,20 @@ static double similaridade_do_criterio(const SimRule *regra, const ITEM *item){
     return similaridade > 0.0 ? similaridade : 0.0;
 }
 
-// Avalia um ITEM em relacao aos FILTES e SIMs da consulta
-// Returna 'true' se o item for aceito e calcula a similaridade obtida
+// avalia um item em relacao aos filtes e sims da consulta returna 'true' se o item for aceito e calcula a similaridade obtida
 bool query_avaliar_item(QUERY *q, ITEM *item, double *similaridade_calc){
     if(q == NULL || item == NULL){
         return false;
     }
 
-    // 1) Avalia todos os FILTERs: um que falhe ja reprova o item
+    //avalia todos os filters: um que falhe ja reprova o item
     for(int i = 0; i < q->qtda_filtros; i++){
         if(!avaliar_filtro(&q->filtros[i], item)){
             return false;
         }
     }
 
-    // 2) Sem SIM, os filtros sao suficientes
+    //sem sim, os filtros sao suficientes
     if(q->qtda_sims == 0){
         if(similaridade_calc != NULL){
             *similaridade_calc = 1.0;
@@ -271,7 +268,7 @@ bool query_avaliar_item(QUERY *q, ITEM *item, double *similaridade_calc){
         return true;
     }
 
-    // 3) Similaridade total = media ponderada dos criterios SIM
+    //similaridade total = media ponderada dos criterios sim
     double soma_ponderada = 0.0;
     double soma_pesos = 0.0;
     for(int i = 0; i < q->qtda_sims; i++){
@@ -286,11 +283,11 @@ bool query_avaliar_item(QUERY *q, ITEM *item, double *similaridade_calc){
         *similaridade_calc = similaridade_total;
     }
 
-    // 4) ACCEPT: similaridade minima para aceitar (pequena folga por causa do double)
+    //accept: similaridade minima para aceitar (pequena folga por causa do double)
     return similaridade_total >= q->limiar_accept - 1e-12;
 }
 
-// Campo da ordenacao (vazio se a consulta nao tem ORDER)
+// campo da ordenacao (vazio se a consulta nao tem order)
 const char *query_get_campo_order(const QUERY *q){
     if(q == NULL){
         return "";
@@ -298,7 +295,7 @@ const char *query_get_campo_order(const QUERY *q){
     return q->campo_order;
 }
 
-// So e crescente se a consulta pediu ASC; sem ORDER o padrao e DESC
+// so eh crescente se a consulta pediu asc; sem order o padrao eh desc
 bool query_order_decrescente(const QUERY *q){
     if(q == NULL){
         return true;

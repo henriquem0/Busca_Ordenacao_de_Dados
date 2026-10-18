@@ -20,14 +20,13 @@ struct lista_ord{
     NO *percurso; // cursor usado por reiniciar/proximo
 };
 
-// Compara o identificador do item com o texto procurado
+// compara o identificador do item com o texto procurado
 static bool mesmo_identificador(const ITEM *item, const char *identificador){
     const char *identificador_item = item_get_identificador(item);
     return identificador_item != NULL && strcmp(identificador_item, identificador) == 0;
 }
 
-// Diz se um no que ja esta na lista deve ficar ANTES do item novo.
-// Chaves iguais ficam antes do novo, o que mantem a ordem de chegada.
+// diz se um no que ja esta na lista deve ficar antes do item novo. chaves iguais ficam antes do novo, o que mantem a ordem de chegada.
 static bool fica_antes(const LISTA_ORD *lista, double chave_existente, double chave_nova){
     if(lista->decrescente){
         return chave_existente >= chave_nova;
@@ -35,9 +34,9 @@ static bool fica_antes(const LISTA_ORD *lista, double chave_existente, double ch
     return chave_existente <= chave_nova;
 }
 
-// Cria e inicializa a lista
+// cria e inicializa a lista
 LISTA_ORD *lista_ord_criar(bool decrescente){
-    LISTA_ORD *lista = (LISTA_ORD *)malloc(sizeof(LISTA_ORD));
+    LISTA_ORD *lista = (LISTA_ORD *)malloc(sizeof(LISTA_ORD)); // reserva o controle da lista ordenada
     if(lista == NULL){
         return NULL;
     }
@@ -49,7 +48,7 @@ LISTA_ORD *lista_ord_criar(bool decrescente){
     return lista;
 }
 
-// Libera a lista. Se apagar_itens for true, os itens tambem sao apagados
+// libera a lista. se apagar_itens for true, os itens tambem sao apagados
 static void lista_ord_liberar(LISTA_ORD **lista, bool apagar_itens){
     if(lista == NULL || *lista == NULL){
         return;
@@ -67,29 +66,27 @@ static void lista_ord_liberar(LISTA_ORD **lista, bool apagar_itens){
     *lista = NULL;
 }
 
-// Destroi a lista e libera a memoria
+// destroi a lista e libera a memoria
 void lista_ord_apagar(LISTA_ORD **lista){
     lista_ord_liberar(lista, true);
 }
 
-// Destroi so a lista, os itens continuam existindo
+// destroi so a lista, os itens continuam existindo
 void lista_ord_apagar_sem_itens(LISTA_ORD **lista){
     lista_ord_liberar(lista, false);
 }
 
-// Insercao ordenada: a lista ja esta ordenada, entao so precisamos achar o
-// lugar do novo no. Se ele vai depois do ultimo, entra direto pelo ponteiro
-// fim (O(1)). Senao, anda ate achar o primeiro no que deve ficar depois dele.
+// insercao ordenada: a lista ja esta ordenada, entao so precisamos achar o lugar do novo no. se ele vai depois do ultimo, entra direto pelo ponteiro fim (o(1)). senao, anda ate achar o primeiro no que deve ficar depois dele.
 bool lista_ord_inserir(LISTA_ORD *lista, ITEM *item, double chave){
     if(lista == NULL || item == NULL){
         return false;
     }
-    NO *novo = (NO *)malloc(sizeof(NO));
+    NO *novo = (NO *)malloc(sizeof(NO)); // cria o no que sera inserido
     if(novo == NULL){
         return false;
     }
     novo->item = item;
-    novo->chave = chave;
+    novo->chave = chave; // guarda a chave usada na ordenacao
     novo->proximo = NULL;
 
     if(lista->fim == NULL || fica_antes(lista, lista->fim->chave, chave)){
@@ -112,18 +109,17 @@ bool lista_ord_inserir(LISTA_ORD *lista, ITEM *item, double chave){
         }
         novo->proximo = atual;
         if(anterior == NULL){
-            lista->inicio = novo; // e o novo primeiro da lista
+            lista->inicio = novo; // atualiza o primeiro no
         }
         else{
-            anterior->proximo = novo;
+            anterior->proximo = novo; // encaixa o novo no entre os existentes
         }
     }
     lista->tamanho++;
     return true;
 }
 
-// Busca sequencial pelo identificador (a chave de ordem nao e o identificador,
-// entao nao da para parar antes do fim)
+// busca sequencial pelo identificador (a chave de ordem nao e o identificador, entao nao da para parar antes do fim)
 ITEM *lista_ord_buscar(const LISTA_ORD *lista, const char *identificador){
     if(lista == NULL || identificador == NULL){
         return NULL;
@@ -138,7 +134,7 @@ ITEM *lista_ord_buscar(const LISTA_ORD *lista, const char *identificador){
     return NULL;
 }
 
-// Remove pelo identificador, guardando o no anterior durante a busca
+// remove pelo identificador, guardando o no anterior durante a busca
 ITEM *lista_ord_remover(LISTA_ORD *lista, const char *identificador){
     if(lista == NULL || identificador == NULL){
         return NULL;
@@ -170,7 +166,7 @@ ITEM *lista_ord_remover(LISTA_ORD *lista, const char *identificador){
     return removido;
 }
 
-// Retorna a quantidade atual de itens na lista
+// retorna a quantidade atual de itens na lista
 int lista_ord_tamanho(const LISTA_ORD *lista){
     if(lista == NULL){
         return 0;
@@ -178,19 +174,19 @@ int lista_ord_tamanho(const LISTA_ORD *lista){
     return lista->tamanho;
 }
 
-// Coloca o cursor no primeiro item
+// coloca o cursor no primeiro item
 void lista_ord_reiniciar(LISTA_ORD *lista){
     if(lista != NULL){
         lista->percurso = lista->inicio;
     }
 }
 
-// Devolve o item do cursor e avanca para o proximo no
+// devolve o item do cursor e avanca para o proximo no
 ITEM *lista_ord_proximo(LISTA_ORD *lista){
     if(lista == NULL || lista->percurso == NULL){
         return NULL;
     }
     ITEM *item = lista->percurso->item;
-    lista->percurso = lista->percurso->proximo;
+    lista->percurso = lista->percurso->proximo; // avanca o cursor ordenado
     return item;
 }
