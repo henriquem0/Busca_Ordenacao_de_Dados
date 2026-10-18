@@ -8,13 +8,13 @@ typedef struct no_gen NO_GEN;
 typedef struct subgrupo SUBGRUPO;
 typedef struct grupo GRUPO;
 
-// Nivel 3: no que guarda o item
+// nivel 3: no que guarda o item
 struct no_gen{
     ITEM *item;
     NO_GEN *proximo;
 };
 
-// Nivel 2: subgrupo, com a sua propria lista de itens
+// nivel 2: subgrupo, com a sua propria lista de itens
 struct subgrupo{
     char *nome;
     NO_GEN *primeiro;
@@ -22,7 +22,7 @@ struct subgrupo{
     SUBGRUPO *proximo;
 };
 
-// Nivel 1: grupo, com a sua propria lista de subgrupos
+// nivel 1: grupo, com a sua propria lista de subgrupos
 struct grupo{
     char *nome;
     SUBGRUPO *primeiro_subgrupo;
@@ -40,37 +40,37 @@ struct lista_gen{
     NO_GEN *no_percurso;
 };
 
-// Copia um texto para a memoria dinamica
+// copia um texto para a memoria dinamica
 static char *copiar_texto(const char *texto){
-    char *copia = (char *)malloc(strlen(texto) + 1);
+    char *copia = (char *)malloc(strlen(texto) + 1); // reserva espaco para copiar o nome
     if(copia != NULL){
-        strcpy(copia, texto);
+        strcpy(copia, texto); // copia o nome para a memoria nova
     }
     return copia;
 }
 
-// Compara o identificador do item com o texto procurado
+// compara o identificador do item com o texto procurado
 static bool mesmo_identificador(const ITEM *item, const char *identificador){
     const char *identificador_item = item_get_identificador(item);
     return identificador_item != NULL && strcmp(identificador_item, identificador) == 0;
 }
 
-// Procura um grupo pelo nome. Devolve NULL se ele ainda nao existe.
+// procura um grupo pelo nome. devolve null se ele ainda nao existe.
 static GRUPO *buscar_grupo(const LISTA_GEN *lista, const char *nome){
     GRUPO *grupo = lista->primeiro_grupo;
     while(grupo != NULL && strcmp(grupo->nome, nome) != 0){
-        grupo = grupo->proximo;
+        grupo = grupo->proximo; // passa para o proximo grupo
     }
     return grupo;
 }
 
-// Cria um grupo novo no fim da lista de grupos
+// cria um grupo novo no fim da lista de grupos
 static GRUPO *criar_grupo(LISTA_GEN *lista, const char *nome){
-    GRUPO *grupo = (GRUPO *)malloc(sizeof(GRUPO));
+    GRUPO *grupo = (GRUPO *)malloc(sizeof(GRUPO)); // cria um grupo novo
     if(grupo == NULL){
         return NULL;
     }
-    grupo->nome = copiar_texto(nome);
+    grupo->nome = copiar_texto(nome); // guarda uma copia do nome do grupo
     if(grupo->nome == NULL){
         free(grupo);
         return NULL;
@@ -89,22 +89,22 @@ static GRUPO *criar_grupo(LISTA_GEN *lista, const char *nome){
     return grupo;
 }
 
-// Procura um subgrupo pelo nome dentro de um grupo
+// procura um subgrupo pelo nome dentro de um grupo
 static SUBGRUPO *buscar_subgrupo(const GRUPO *grupo, const char *nome){
     SUBGRUPO *subgrupo = grupo->primeiro_subgrupo;
     while(subgrupo != NULL && strcmp(subgrupo->nome, nome) != 0){
-        subgrupo = subgrupo->proximo;
+        subgrupo = subgrupo->proximo; // passa para o proximo subgrupo
     }
     return subgrupo;
 }
 
-// Cria um subgrupo novo no fim da lista de subgrupos do grupo
+// cria um subgrupo novo no fim da lista de subgrupos do grupo
 static SUBGRUPO *criar_subgrupo(GRUPO *grupo, const char *nome){
-    SUBGRUPO *subgrupo = (SUBGRUPO *)malloc(sizeof(SUBGRUPO));
+    SUBGRUPO *subgrupo = (SUBGRUPO *)malloc(sizeof(SUBGRUPO)); // cria um subgrupo novo
     if(subgrupo == NULL){
         return NULL;
     }
-    subgrupo->nome = copiar_texto(nome);
+    subgrupo->nome = copiar_texto(nome); // guarda uma copia do nome do subgrupo
     if(subgrupo->nome == NULL){
         free(subgrupo);
         return NULL;
@@ -123,9 +123,9 @@ static SUBGRUPO *criar_subgrupo(GRUPO *grupo, const char *nome){
     return subgrupo;
 }
 
-// Cria a lista vazia
+// cria a lista vazia
 LISTA_GEN *lista_gen_criar(void){
-    LISTA_GEN *lista = (LISTA_GEN *)malloc(sizeof(LISTA_GEN));
+    LISTA_GEN *lista = (LISTA_GEN *)malloc(sizeof(LISTA_GEN)); // reserva o controle da lista agrupada
     if(lista == NULL){
         return NULL;
     }
@@ -138,7 +138,7 @@ LISTA_GEN *lista_gen_criar(void){
     return lista;
 }
 
-// Libera a lista inteira: itens (se pedido), nos, subgrupos, grupos e a lista
+// libera a lista inteira: itens (se pedido), nos, subgrupos, grupos e a lista
 static void lista_gen_liberar(LISTA_GEN **lista, bool apagar_itens){
     if(lista == NULL || *lista == NULL){
         return;
@@ -170,30 +170,27 @@ static void lista_gen_liberar(LISTA_GEN **lista, bool apagar_itens){
     *lista = NULL;
 }
 
-// Destroi a lista e libera a memoria
+// destroi a lista e libera a memoria
 void lista_gen_apagar(LISTA_GEN **lista){
     lista_gen_liberar(lista, true);
 }
 
-// Destroi so a lista, os itens continuam existindo
+// destroi so a lista, os itens continuam existindo
 void lista_gen_apagar_sem_itens(LISTA_GEN **lista){
     lista_gen_liberar(lista, false);
 }
 
-// Insere o item no grupo/subgrupo (criando os que nao existirem).
-// Custo: O(g + s) para achar o grupo e o subgrupo, mais O(1) para ligar o no.
-// Se faltar memoria para criar um grupo ou subgrupo, a insercao falha e o item
-// nao entra (pode sobrar um grupo vazio, que nao atrapalha o percurso).
+// insere o item no grupo/subgrupo (criando os que nao existirem). custo: o(g + s) para achar o grupo e o subgrupo, mais o(1) para ligar o no. se faltar memoria para criar um grupo ou subgrupo, a insercao falha e o item nao entra (pode sobrar um grupo vazio, que nao atrapalha o percurso).
 bool lista_gen_inserir(LISTA_GEN *lista, ITEM *item,
                        const char *nome_grupo, const char *nome_subgrupo){
     if(lista == NULL || item == NULL || nome_grupo == NULL || nome_subgrupo == NULL){
         return false;
     }
-    NO_GEN *novo = (NO_GEN *)malloc(sizeof(NO_GEN));
+    NO_GEN *novo = (NO_GEN *)malloc(sizeof(NO_GEN)); // cria um no para o item
     if(novo == NULL){
         return false;
     }
-    novo->item = item;
+    novo->item = item; // liga o item ao no
     novo->proximo = NULL;
 
     GRUPO *grupo = buscar_grupo(lista, nome_grupo);
@@ -223,7 +220,7 @@ bool lista_gen_inserir(LISTA_GEN *lista, ITEM *item,
     return true;
 }
 
-// Busca por identificador percorrendo todos os grupos e subgrupos, custo O(n)
+// busca por identificador percorrendo todos os grupos e subgrupos, custo o(n)
 ITEM *lista_gen_buscar(const LISTA_GEN *lista, const char *identificador){
     if(lista == NULL || identificador == NULL){
         return NULL;
@@ -241,7 +238,7 @@ ITEM *lista_gen_buscar(const LISTA_GEN *lista, const char *identificador){
     return NULL;
 }
 
-// Retorna a quantidade total de itens
+// retorna a quantidade total de itens
 int lista_gen_tamanho(const LISTA_GEN *lista){
     if(lista == NULL){
         return 0;
@@ -249,7 +246,7 @@ int lista_gen_tamanho(const LISTA_GEN *lista){
     return lista->tamanho;
 }
 
-// Coloca o cursor no primeiro item do primeiro subgrupo do primeiro grupo
+// coloca o cursor no primeiro item do primeiro subgrupo do primeiro grupo
 void lista_gen_reiniciar(LISTA_GEN *lista){
     if(lista == NULL){
         return;
@@ -265,16 +262,15 @@ void lista_gen_reiniciar(LISTA_GEN *lista){
     }
 }
 
-// Devolve o proximo item do percurso. Quando os nos de um subgrupo acabam,
-// passa para o proximo subgrupo; quando os subgrupos acabam, para o proximo grupo.
+// devolve o proximo item do percurso. quando os nos de um subgrupo acabam, passa para o proximo subgrupo; quando os subgrupos acabam, para o proximo grupo.
 ITEM *lista_gen_proximo(LISTA_GEN *lista){
     if(lista == NULL){
         return NULL;
     }
     while(true){
         if(lista->no_percurso != NULL){
-            ITEM *item = lista->no_percurso->item;
-            lista->no_percurso = lista->no_percurso->proximo;
+            ITEM *item = lista->no_percurso->item; // guarda o item atual do percurso
+            lista->no_percurso = lista->no_percurso->proximo; // avanca dentro do subgrupo
             return item;
         }
         if(lista->grupo_percurso == NULL){

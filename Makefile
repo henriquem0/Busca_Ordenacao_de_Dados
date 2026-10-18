@@ -1,23 +1,22 @@
-# Compilador e Flags
+# compilador e flags
 CC = gcc
 
-#O '-I include' avisa o gcc para procurar os cabecalhos .h 
-#na pasta include
-# -D_POSIX_C_SOURCE=199309L: habilita o clock_gettime no padrão C99
+# -i include indica onde estao os cabecalhos
+# -d_posix_c_source habilita clock_gettime no c99
 CFLAGS = -Wall -Wextra -std=c99 -pedantic -I include -D_POSIX_C_SOURCE=199309L
 
-# Objetos dos TADs (pilha, fila e listas)
+# objetos dos tads
 TADS_OBJ = pilha.o fila.o lista_seq.o lista_enc.o lista_cabeca.o lista_ord.o lista_gen.o lista_cruz.o
 
 .PHONY: all run clean teste
 
-# Regra principal: gera o executavel 'trabalho'
+# gera o executavel principal
 all: trabalho
 
 trabalho: main.o cli.o item.o query.o estrutura.o reader_nasa.o $(TADS_OBJ)
 	$(CC) main.o cli.o item.o query.o estrutura.o reader_nasa.o $(TADS_OBJ) -o trabalho $(CFLAGS)
 
-#Compilacao dos modulos individuais
+# compila os modulos individuais
 main.o: apps/main.c include/cli.h include/item.h include/query.h include/estrutura.h include/reader_nasa.h
 	$(CC) -c apps/main.c -o main.o $(CFLAGS)
 
@@ -36,7 +35,7 @@ estrutura.o: source/estrutura.c include/estrutura.h include/query.h include/item
 reader_nasa.o: source/reader_nasa.c include/reader_nasa.h include/estrutura.h include/item.h
 	$(CC) -c source/reader_nasa.c -o reader_nasa.o $(CFLAGS)
 
-#Compilacao dos TADs (cabecalhos em include/tads e codigo em source/tads)
+# compila os tads
 pilha.o: source/tads/pilha.c include/tads/pilha.h include/item.h
 	$(CC) -c source/tads/pilha.c -o pilha.o $(CFLAGS)
 
@@ -61,15 +60,15 @@ lista_gen.o: source/tads/lista_gen.c include/tads/lista_gen.h include/item.h
 lista_cruz.o: source/tads/lista_cruz.c include/tads/lista_cruz.h include/item.h
 	$(CC) -c source/tads/lista_cruz.c -o lista_cruz.o $(CFLAGS)
 
-# Executa um exemplo com a base inteira (nos primeiros 10000 registros nao ha eventos futuros)
+# executa um exemplo com a base inteira
 run: trabalho
 	./trabalho --reader nasa --input dados/asteroids.csv --base lista_enc --result lista_ord --query consultas/q1.txt --output resultado.csv --top-k 100 --limit 0
 
-# Testes unitarios dos TADs (usa o Makefile da pasta tests)
+# executa os testes unitarios dos tads
 teste:
 	$(MAKE) -C tests run
 
-# Regra de limpeza:
+# remove arquivos gerados
 clean:
 	rm -f *.o trabalho resultado.csv
 	$(MAKE) -C tests clean

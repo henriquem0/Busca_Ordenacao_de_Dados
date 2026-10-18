@@ -13,9 +13,9 @@ struct fila{
     int capacidade; // tamanho alocado no vetor
 };
 
-// Cria e inicializa a fila
+// cria e inicializa a fila
 FILA *fila_criar(void){
-    FILA *fila = (FILA *)malloc(sizeof(FILA));
+    FILA *fila = (FILA *)malloc(sizeof(FILA)); // reserva o controle da fila
     if(fila == NULL){
         return NULL;
     }
@@ -24,7 +24,7 @@ FILA *fila_criar(void){
     fila->tamanho = 0;
     fila->capacidade = FILA_CAPACIDADE_INICIAL;
 
-    fila->item = (ITEM **)malloc(fila->capacidade * sizeof(ITEM *));
+    fila->item = (ITEM **)malloc(fila->capacidade * sizeof(ITEM *)); // reserva o vetor circular de itens
     if(fila->item == NULL){
         free(fila);
         return NULL;
@@ -32,16 +32,15 @@ FILA *fila_criar(void){
     return fila;
 }
 
-// Dobra a capacidade da fila. Como o vetor e circular, os itens sao copiados
-// na ordem logica (a partir de inicio) para o comeco do vetor novo.
+// dobra a capacidade da fila. como o vetor e circular, os itens sao copiados na ordem logica (a partir de inicio) para o comeco do vetor novo.
 static bool fila_aumentar(FILA *fila){
     int nova_capacidade = fila->capacidade * 2;
-    ITEM **novo_vetor = (ITEM **)malloc(nova_capacidade * sizeof(ITEM *));
+    ITEM **novo_vetor = (ITEM **)malloc(nova_capacidade * sizeof(ITEM *)); // cria um vetor maior
     if(novo_vetor == NULL){
         return false;
     }
     for(int i = 0; i < fila->tamanho; i++){
-        novo_vetor[i] = fila->item[(fila->inicio + i) % fila->capacidade];
+        novo_vetor[i] = fila->item[(fila->inicio + i) % fila->capacidade]; // reorganiza a ordem circular
     }
     free(fila->item);
     fila->item = novo_vetor;
@@ -51,7 +50,7 @@ static bool fila_aumentar(FILA *fila){
     return true;
 }
 
-// Libera a fila. Se apagar_itens for true, os itens tambem sao apagados
+// libera a fila. se apagar_itens for true, os itens tambem sao apagados
 static void fila_liberar(FILA **fila, bool apagar_itens){
     if(fila == NULL || *fila == NULL){
         return;
@@ -67,17 +66,17 @@ static void fila_liberar(FILA **fila, bool apagar_itens){
     *fila = NULL;
 }
 
-// Destroi a fila e libera a memoria
+// destroi a fila e libera a memoria
 void fila_apagar(FILA **fila){
     fila_liberar(fila, true);
 }
 
-// Destroi so a fila, os itens continuam existindo
+// destroi so a fila, os itens continuam existindo
 void fila_apagar_sem_itens(FILA **fila){
     fila_liberar(fila, false);
 }
 
-// Insere um item no fim da fila
+// insere um item no fim da fila
 bool fila_inserir(FILA *fila, ITEM *item){
     if(fila == NULL || item == NULL){
         return false;
@@ -85,25 +84,25 @@ bool fila_inserir(FILA *fila, ITEM *item){
     if(fila->tamanho == fila->capacidade && !fila_aumentar(fila)){
         return false;
     }
-    fila->item[fila->fim] = item;
-    fila->fim = (fila->fim + 1) % fila->capacidade;
+    fila->item[fila->fim] = item; // coloca o item na proxima posicao livre
+    fila->fim = (fila->fim + 1) % fila->capacidade; // avanca e volta ao inicio se necessario
     fila->tamanho++;
     return true;
 }
 
-// Retira o item do inicio da fila
+// retira o item do inicio da fila
 ITEM *fila_remover(FILA *fila){
     if(fila == NULL || fila->tamanho == 0){
         return NULL;
     }
-    ITEM *item = fila->item[fila->inicio];
+    ITEM *item = fila->item[fila->inicio]; // guarda o primeiro item antes de remove-lo
     fila->item[fila->inicio] = NULL;
     fila->inicio = (fila->inicio + 1) % fila->capacidade;
     fila->tamanho--;
     return item;
 }
 
-// Retorna a quantidade atual de itens na fila
+// retorna a quantidade atual de itens na fila
 int fila_tamanho(const FILA *fila){
     if(fila == NULL){
         return 0;
@@ -111,10 +110,10 @@ int fila_tamanho(const FILA *fila){
     return fila->tamanho;
 }
 
-// Consulta um item por posicao logica (0 = inicio da fila)
+// consulta um item por posicao logica (0 = inicio da fila)
 ITEM *fila_obter(const FILA *fila, int indice){
     if(fila == NULL || indice < 0 || indice >= fila->tamanho){
         return NULL;
     }
-    return fila->item[(fila->inicio + indice) % fila->capacidade];
+    return fila->item[(fila->inicio + indice) % fila->capacidade]; // converte a posicao logica em fisica
 }

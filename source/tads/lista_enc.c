@@ -18,15 +18,15 @@ struct lista_enc{
     NO *percurso; // cursor usado por reiniciar/proximo
 };
 
-// Compara o identificador do item com o texto procurado
+// compara o identificador do item com o texto procurado
 static bool mesmo_identificador(const ITEM *item, const char *identificador){
     const char *identificador_item = item_get_identificador(item);
     return identificador_item != NULL && strcmp(identificador_item, identificador) == 0;
 }
 
-// Cria e inicializa a lista (vazia: inicio == fim == NULL)
+// cria e inicializa a lista (vazia: inicio == fim == null)
 LISTA_ENC *lista_enc_criar(void){
-    LISTA_ENC *lista = (LISTA_ENC *)malloc(sizeof(LISTA_ENC));
+    LISTA_ENC *lista = (LISTA_ENC *)malloc(sizeof(LISTA_ENC)); // reserva o controle da lista
     if(lista == NULL){
         return NULL;
     }
@@ -37,7 +37,7 @@ LISTA_ENC *lista_enc_criar(void){
     return lista;
 }
 
-// Libera a lista. Se apagar_itens for true, os itens tambem sao apagados
+// libera a lista. se apagar_itens for true, os itens tambem sao apagados
 static void lista_enc_liberar(LISTA_ENC **lista, bool apagar_itens){
     if(lista == NULL || *lista == NULL){
         return;
@@ -55,40 +55,40 @@ static void lista_enc_liberar(LISTA_ENC **lista, bool apagar_itens){
     *lista = NULL;
 }
 
-// Destroi a lista e libera a memoria
+// destroi a lista e libera a memoria
 void lista_enc_apagar(LISTA_ENC **lista){
     lista_enc_liberar(lista, true);
 }
 
-// Destroi so a lista, os itens continuam existindo
+// destroi so a lista, os itens continuam existindo
 void lista_enc_apagar_sem_itens(LISTA_ENC **lista){
     lista_enc_liberar(lista, false);
 }
 
-// Insere no fim da lista
+// insere no fim da lista
 bool lista_enc_inserir(LISTA_ENC *lista, ITEM *item){
     if(lista == NULL || item == NULL){
         return false;
     }
-    NO *novo = (NO *)malloc(sizeof(NO));
+    NO *novo = (NO *)malloc(sizeof(NO)); // cria um no para o item
     if(novo == NULL){
         return false;
     }
-    novo->item = item;
+    novo->item = item; // liga o item ao novo no
     novo->proximo = NULL;
 
     if(lista->inicio == NULL){
         lista->inicio = novo; // lista vazia: o novo no e o primeiro e o ultimo
     }
     else{
-        lista->fim->proximo = novo;
+        lista->fim->proximo = novo; // liga o antigo ultimo ao novo no
     }
     lista->fim = novo;
     lista->tamanho++;
     return true;
 }
 
-// Busca sequencial pelo identificador, custo O(n)
+// busca sequencial pelo identificador, custo o(n)
 ITEM *lista_enc_buscar(const LISTA_ENC *lista, const char *identificador){
     if(lista == NULL || identificador == NULL){
         return NULL;
@@ -103,8 +103,7 @@ ITEM *lista_enc_buscar(const LISTA_ENC *lista, const char *identificador){
     return NULL;
 }
 
-// Remove pelo identificador. Durante a busca guardamos o no anterior, porque
-// em lista simples o no atual nao sabe quem vem antes dele.
+// remove pelo identificador. durante a busca guardamos o no anterior, porque em lista simples o no atual nao sabe quem vem antes dele.
 ITEM *lista_enc_remover(LISTA_ENC *lista, const char *identificador){
     if(lista == NULL || identificador == NULL){
         return NULL;
@@ -123,10 +122,10 @@ ITEM *lista_enc_remover(LISTA_ENC *lista, const char *identificador){
         lista->inicio = atual->proximo; // removendo o primeiro
     }
     else{
-        anterior->proximo = atual->proximo;
+        anterior->proximo = atual->proximo; // pula o no que sera removido
     }
     if(atual == lista->fim){
-        lista->fim = anterior; // removendo o ultimo (fica NULL se era o unico)
+        lista->fim = anterior; // removendo o ultimo (fica null se era o unico)
     }
 
     ITEM *removido = atual->item;
@@ -136,7 +135,7 @@ ITEM *lista_enc_remover(LISTA_ENC *lista, const char *identificador){
     return removido;
 }
 
-// Retorna a quantidade atual de itens na lista
+// retorna a quantidade atual de itens na lista
 int lista_enc_tamanho(const LISTA_ENC *lista){
     if(lista == NULL){
         return 0;
@@ -144,19 +143,19 @@ int lista_enc_tamanho(const LISTA_ENC *lista){
     return lista->tamanho;
 }
 
-// Coloca o cursor no primeiro item
+// coloca o cursor no primeiro item
 void lista_enc_reiniciar(LISTA_ENC *lista){
     if(lista != NULL){
         lista->percurso = lista->inicio;
     }
 }
 
-// Devolve o item do cursor e avanca para o proximo no
+// devolve o item do cursor e avanca para o proximo no
 ITEM *lista_enc_proximo(LISTA_ENC *lista){
     if(lista == NULL || lista->percurso == NULL){
         return NULL;
     }
     ITEM *item = lista->percurso->item;
-    lista->percurso = lista->percurso->proximo;
+    lista->percurso = lista->percurso->proximo; // avanca o cursor para o proximo no
     return item;
 }

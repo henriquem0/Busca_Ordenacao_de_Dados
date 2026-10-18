@@ -6,32 +6,28 @@
 
 typedef struct lista_ord LISTA_ORD;
 
-// Cria a lista ordenada. Se decrescente for true, o maior valor de chave fica
-// no inicio (ORDER|similarity|DESC); senao, o menor fica no inicio.
+// cria a lista ordenada. se decrescente for true, o maior valor de chave fica no inicio (order|similarity|desc); senao, o menor fica no inicio.
 LISTA_ORD *lista_ord_criar(bool decrescente);
 
-// Destroi a lista e libera a memoria (incluindo os itens guardados nela)
+// destroi a lista e libera a memoria (incluindo os itens guardados nela)
 void lista_ord_apagar(LISTA_ORD **lista);
 
-// Destroi so a lista, os itens continuam existindo (usado na estrutura de resultado)
+// destroi so a lista, os itens continuam existindo (usado na estrutura de resultado)
 void lista_ord_apagar_sem_itens(LISTA_ORD **lista);
 
-// Insere o item ja na posicao correta, mantendo a ordem pela chave (por exemplo,
-// a similaridade). Chaves iguais ficam na ordem de chegada. Custo O(n).
+// insere o item ja na posicao correta, mantendo a ordem pela chave (por exemplo, a similaridade). chaves iguais ficam na ordem de chegada. custo o(n).
 bool lista_ord_inserir(LISTA_ORD *lista, ITEM *item, double chave);
 
-// Busca o primeiro item com o identificador informado (o item continua na lista)
+// busca o primeiro item com o identificador informado (o item continua na lista)
 ITEM *lista_ord_buscar(const LISTA_ORD *lista, const char *identificador);
 
-// Remove o primeiro item com o identificador informado e devolve ele
-// (quem chamou passa a ser dono do item). Devolve NULL se nao achar.
-// Depois de remover, o percurso volta para o inicio da lista.
+// remove o primeiro item com o identificador informado e devolve ele (quem chamou passa a ser dono do item). devolve null se nao achar. depois de remover, o percurso volta para o inicio da lista.
 ITEM *lista_ord_remover(LISTA_ORD *lista, const char *identificador);
 
-// Retorna a quantidade atual de itens na lista
+// retorna a quantidade atual de itens na lista
 int lista_ord_tamanho(const LISTA_ORD *lista);
 
-// Percurso: devolve os itens na ordem da lista. NULL quando acabam.
+// percurso: devolve os itens na ordem da lista. null quando acabam.
 void lista_ord_reiniciar(LISTA_ORD *lista);
 ITEM *lista_ord_proximo(LISTA_ORD *lista);
 

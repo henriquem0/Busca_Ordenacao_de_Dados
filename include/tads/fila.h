@@ -9,7 +9,7 @@ typedef struct fila FILA;
 // cria e inicializa a fila (vetor circular que cresce sozinho)
 FILA *fila_criar(void);
 
-//destroi a fila e libera a memoria (incluindo os itens guardados nela)
+// destroi a fila e libera a memoria (incluindo os itens guardados nela)
 void fila_apagar(FILA **fila);
 
 // destroi so a fila, os itens continuam existindo (usado na estrutura de resultado)
@@ -24,7 +24,7 @@ ITEM *fila_remover(FILA *fila);
 // retorna a quantidade atual de itens na fila
 int fila_tamanho(const FILA *fila);
 
-// consulta um item por posicao logica: 0 = inicio da fila, tamanho-1 = fim. O(1)
+// consulta um item por posicao logica: 0 = inicio da fila, tamanho-1 = fim. o(1)
 ITEM *fila_obter(const FILA *fila, int indice);
 
 #endif

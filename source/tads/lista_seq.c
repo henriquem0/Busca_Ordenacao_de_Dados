@@ -12,13 +12,13 @@ struct lista_seq{
     int capacidade; // tamanho alocado no vetor
 };
 
-// Compara o identificador do item com o texto procurado
+// compara o identificador do item com o texto procurado
 static bool mesmo_identificador(const ITEM *item, const char *identificador){
     const char *identificador_item = item_get_identificador(item);
     return identificador_item != NULL && strcmp(identificador_item, identificador) == 0;
 }
 
-// Procura a posicao do primeiro item com o identificador. Devolve -1 se nao achar.
+// procura a posicao do primeiro item com o identificador. devolve -1 se nao achar.
 static int lista_seq_posicao(const LISTA_SEQ *lista, const char *identificador){
     for(int i = 0; i < lista->tamanho; i++){
         if(mesmo_identificador(lista->item[i], identificador)){
@@ -28,16 +28,16 @@ static int lista_seq_posicao(const LISTA_SEQ *lista, const char *identificador){
     return -1;
 }
 
-// Cria e inicializa a lista
+// cria e inicializa a lista
 LISTA_SEQ *lista_seq_criar(void){
-    LISTA_SEQ *lista = (LISTA_SEQ *)malloc(sizeof(LISTA_SEQ));
+    LISTA_SEQ *lista = (LISTA_SEQ *)malloc(sizeof(LISTA_SEQ)); // reserva o controle da lista
     if(lista == NULL){
         return NULL;
     }
     lista->tamanho = 0;
     lista->capacidade = LISTA_SEQ_CAPACIDADE_INICIAL;
 
-    lista->item = (ITEM **)malloc(lista->capacidade * sizeof(ITEM *));
+    lista->item = (ITEM **)malloc(lista->capacidade * sizeof(ITEM *)); // reserva o vetor de itens
     if(lista->item == NULL){
         free(lista);
         return NULL;
@@ -45,7 +45,7 @@ LISTA_SEQ *lista_seq_criar(void){
     return lista;
 }
 
-// Libera a lista. Se apagar_itens for true, os itens tambem sao apagados
+// libera a lista. se apagar_itens for true, os itens tambem sao apagados
 static void lista_seq_liberar(LISTA_SEQ **lista, bool apagar_itens){
     if(lista == NULL || *lista == NULL){
         return;
@@ -60,36 +60,36 @@ static void lista_seq_liberar(LISTA_SEQ **lista, bool apagar_itens){
     *lista = NULL;
 }
 
-// Destroi a lista e libera a memoria
+// destroi a lista e libera a memoria
 void lista_seq_apagar(LISTA_SEQ **lista){
     lista_seq_liberar(lista, true);
 }
 
-// Destroi so a lista, os itens continuam existindo
+// destroi so a lista, os itens continuam existindo
 void lista_seq_apagar_sem_itens(LISTA_SEQ **lista){
     lista_seq_liberar(lista, false);
 }
 
-// Insere um item no fim da lista (custo O(1), O(n) so quando precisa crescer)
+// insere um item no fim da lista (custo o(1), o(n) so quando precisa crescer)
 bool lista_seq_inserir(LISTA_SEQ *lista, ITEM *item){
     if(lista == NULL || item == NULL){
         return false;
     }
     if(lista->tamanho >= lista->capacidade){
         int nova_capacidade = lista->capacidade * 2;
-        ITEM **aux = (ITEM **)realloc(lista->item, nova_capacidade * sizeof(ITEM *));
+        ITEM **aux = (ITEM **)realloc(lista->item, nova_capacidade * sizeof(ITEM *)); // aumenta o vetor sem perder os itens
         if(aux == NULL){
             return false; // o vetor antigo continua valido
         }
         lista->item = aux;
         lista->capacidade = nova_capacidade;
     }
-    lista->item[lista->tamanho] = item;
+    lista->item[lista->tamanho] = item; // coloca o novo item no fim
     lista->tamanho++;
     return true;
 }
 
-// Busca sequencial pelo identificador, custo O(n)
+// busca sequencial pelo identificador, custo o(n)
 ITEM *lista_seq_buscar(const LISTA_SEQ *lista, const char *identificador){
     if(lista == NULL || identificador == NULL){
         return NULL;
@@ -101,8 +101,7 @@ ITEM *lista_seq_buscar(const LISTA_SEQ *lista, const char *identificador){
     return lista->item[posicao];
 }
 
-// Remove pelo identificador. Os itens da direita deslocam uma posicao para a esquerda,
-// por isso o custo e O(n).
+// remove pelo identificador. os itens da direita deslocam uma posicao para a esquerda, por isso o custo e o(n).
 ITEM *lista_seq_remover(LISTA_SEQ *lista, const char *identificador){
     if(lista == NULL || identificador == NULL){
         return NULL;
@@ -113,14 +112,14 @@ ITEM *lista_seq_remover(LISTA_SEQ *lista, const char *identificador){
     }
     ITEM *removido = lista->item[posicao];
     for(int i = posicao; i < lista->tamanho - 1; i++){
-        lista->item[i] = lista->item[i + 1];
+        lista->item[i] = lista->item[i + 1]; // desloca os itens para fechar o espaco
     }
     lista->tamanho--;
     lista->item[lista->tamanho] = NULL;
     return removido;
 }
 
-// Retorna a quantidade atual de itens na lista
+// retorna a quantidade atual de itens na lista
 int lista_seq_tamanho(const LISTA_SEQ *lista){
     if(lista == NULL){
         return 0;
@@ -128,10 +127,10 @@ int lista_seq_tamanho(const LISTA_SEQ *lista){
     return lista->tamanho;
 }
 
-// Consulta um item por indice
+// consulta um item por indice
 ITEM *lista_seq_obter(const LISTA_SEQ *lista, int indice){
     if(lista == NULL || indice < 0 || indice >= lista->tamanho){
         return NULL;
     }
-    return lista->item[indice];
+    return lista->item[indice]; // acessa diretamente a posicao solicitada
 }

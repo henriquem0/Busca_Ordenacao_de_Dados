@@ -6,31 +6,28 @@
 
 typedef struct lista_enc LISTA_ENC;
 
-// Cria e inicializa a lista simplesmente encadeada
+// cria e inicializa a lista simplesmente encadeada
 LISTA_ENC *lista_enc_criar(void);
 
-// Destroi a lista e libera a memoria (incluindo os itens guardados nela)
+// destroi a lista e libera a memoria (incluindo os itens guardados nela)
 void lista_enc_apagar(LISTA_ENC **lista);
 
-// Destroi so a lista, os itens continuam existindo (usado na estrutura de resultado)
+// destroi so a lista, os itens continuam existindo (usado na estrutura de resultado)
 void lista_enc_apagar_sem_itens(LISTA_ENC **lista);
 
-// Insere um item no fim da lista (custo O(1) porque a lista guarda o ponteiro fim)
+// insere um item no fim da lista (custo o(1) porque a lista guarda o ponteiro fim)
 bool lista_enc_inserir(LISTA_ENC *lista, ITEM *item);
 
-// Busca o primeiro item com o identificador informado (o item continua na lista)
+// busca o primeiro item com o identificador informado (o item continua na lista)
 ITEM *lista_enc_buscar(const LISTA_ENC *lista, const char *identificador);
 
-// Remove o primeiro item com o identificador informado e devolve ele
-// (quem chamou passa a ser dono do item). Devolve NULL se nao achar.
-// Depois de remover, o percurso volta para o inicio da lista.
+// remove o primeiro item com o identificador informado e devolve ele (quem chamou passa a ser dono do item). devolve null se nao achar. depois de remover, o percurso volta para o inicio da lista.
 ITEM *lista_enc_remover(LISTA_ENC *lista, const char *identificador);
 
-// Retorna a quantidade atual de itens na lista
+// retorna a quantidade atual de itens na lista
 int lista_enc_tamanho(const LISTA_ENC *lista);
 
-// Percurso: reiniciar coloca o cursor no primeiro item e cada chamada de
-// proximo devolve um item e avanca. Devolve NULL quando acabam os itens.
+// percurso: reiniciar coloca o cursor no primeiro item e cada chamada de proximo devolve um item e avanca. devolve null quando acabam os itens.
 void lista_enc_reiniciar(LISTA_ENC *lista);
 ITEM *lista_enc_proximo(LISTA_ENC *lista);
 
