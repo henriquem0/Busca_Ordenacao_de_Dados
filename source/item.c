@@ -1,312 +1,347 @@
-#include <stdio.h> 
+#include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <stdbool.h> 
+#include <stdbool.h>
+#include <ctype.h>
 #include "item.h"
 
 struct item_{
-    char *asteroid_designation; 
-    char *asteroid_fullname;
-    char *close_approach_date;
-    int year;
-    int month;
-    double distance_au;
-    double velocity_km_s;
-    float absolute_magnitude; 
-    int days_until_approach;
-    bool is_past_event;
-    bool is_future_event;
-    double risk_score;
-    int panic_level;
-    char *threat_category;
-    char *panic_verdict;
-    bool on_sentry_list;
-    double sentry_impact_prob;
-    int sentry_torino_scale;
-    float sentry_palermo_scale;
-    int sentry_diameter_km;
-
+    char *linha;    // linha original do csv, sem o fim de linha (usada na saida)
+    char **campos;  // valor de cada coluna, sem as aspas
+    int qtd_campos;
 };
 
-//Funcao auxiliar para duplicar as strings e alocar dinamicamente
+// cabecalho do dataset. fica no modulo porque e igual para todos os itens de um mesmo arquivo: o leitor define uma vez e os itens consultam.
+static char **nomes_colunas = NULL;
+static int qtd_colunas = 0;
+static char *cabecalho_original = NULL;
+static char terminador_linha[3] = "\n";
+
+
+
+
+// funcao auxiliar para duplicar as strings e alocar dinamicamente
 static char *meu_strdup(const char *str){
     if(str == NULL) return NULL;
-    int tam = strlen(str) + 1;
-    char *copia = (char *)malloc(tam);
+
+
+    int tam = strlen(str) + 1; // calcula o tamanho do texto com o terminador
+    char *copia = (char *)malloc(tam); // reserva memoria para a copia
+
+
     if(copia != NULL){
-        strcpy(copia, str);
+        strcpy(copia, str); // copia o texto para o espaco reservado
+    }
+
+    return copia;
+}
+
+
+
+
+// libera um vetor de textos com 'qtd' posicoes
+static void liberar_campos(char **campos, int qtd){
+    if(campos == NULL){
+        return;
+    }
+
+
+    for(int i = 0; i < qtd; i++){
+        free(campos[i]); // libera cada coluna antes do vetor
+    }
+
+
+    free(campos); // libera o vetor de ponteiros
+}
+
+
+
+
+// compara dois textos ignorando maiusculas e minusculas ("true" == "true")
+static bool textos_iguais_sem_caixa(const char *a, const char *b){
+
+    while(*a != '\0' && *b != '\0'){
+        if(tolower((unsigned char)*a) != tolower((unsigned char)*b)){
+            return false;
+        }
+        a++;
+        b++;
+    }
+
+
+
+    return *a == '\0' && *b == '\0';
+}
+
+
+
+
+
+// divide uma linha csv em colunas. uma virgula dentro de aspas faz parte do texto, por isso o laco controla se estamos "entre aspas". colunas vazias (",,") viram texto vazio. devolve a quantidade de colunas ou -1 se faltar memoria.
+static int dividir_linha_csv(const char *linha, char ***campos_saida){
+    int qtd = 1;
+    bool entre_aspas = false;
+
+    for(int i = 0; linha[i] != '\0'; i++){
+        if(linha[i] == '"'){
+            entre_aspas = !entre_aspas;
+        }
+        else if(linha[i] == ',' && !entre_aspas){
+            qtd++;
+        }
+    }
+
+    char *buffer = (char *)malloc(strlen(linha) + 1); // cria um buffer para montar cada campo
+
+    char **campos = (char **)calloc(qtd, sizeof(char *)); // cria o vetor de colunas zerado
+
+
+    if(buffer == NULL || campos == NULL){
+        free(buffer);
+        free(campos);
+        return -1;
+    }
+
+    int indice_campo = 0;
+    int tam_buffer = 0;
+    entre_aspas = false;
+
+
+    for(int i = 0; ; i++){
+        char atual = linha[i];
+
+
+        if(atual == '"'){
+            if(entre_aspas && linha[i + 1] == '"'){
+                buffer[tam_buffer++] = '"'; // transforma duas aspas csv em uma
+                i++;
+            }
+            else{
+                entre_aspas = !entre_aspas;
+            }
+        }
+        else if((atual == ',' && !entre_aspas) || atual == '\0'){
+            buffer[tam_buffer] = '\0';
+            campos[indice_campo] = meu_strdup(buffer); // salva uma copia do campo montado
+            if(campos[indice_campo] == NULL){
+                liberar_campos(campos, indice_campo);
+                free(buffer); // libera o buffer temporario
+                return -1;
+            }
+            indice_campo++;
+            tam_buffer = 0;
+            if(atual == '\0'){
+                break;
+            }
+        }
+        else{
+            buffer[tam_buffer++] = atual;
+        }
+
+
+
+    }
+
+
+
+
+    free(buffer);
+    *campos_saida = campos;
+    return qtd;
+}
+
+
+
+
+
+
+
+// guarda uma copia da linha sem o '\r' e o '\n' do final
+static char *copiar_sem_fim_de_linha(const char *linha){
+    char *copia = meu_strdup(linha);
+    if(copia != NULL){
+        copia[strcspn(copia, "\r\n")] = '\0'; // remove a quebra de linha encontrada
     }
     return copia;
 }
 
-// 1) Construtor e Destruidor
-ITEM *item_criar(const char *linha_csv){
+// 1) cabecalho
+void item_liberar_cabecalho(void){
+    liberar_campos(nomes_colunas, qtd_colunas); // libera os nomes das colunas antigas
+    nomes_colunas = NULL;
+    qtd_colunas = 0;
+    free(cabecalho_original);
+    cabecalho_original = NULL;
+    strcpy(terminador_linha, "\n"); // volta ao terminador padrao
+}
 
-    // - Trava de seguranca para garantir que foi criado
+void item_definir_cabecalho(const char *linha_cabecalho){
+    item_liberar_cabecalho();
+    if(linha_cabecalho == NULL){
+        return;
+    }
+    // descobre se o arquivo termina as linhas com "\r\n" ou so "\n"
+    if(strstr(linha_cabecalho, "\r\n") != NULL){
+        strcpy(terminador_linha, "\r\n"); // preserva o terminador usado pelo arquivo
+    }
+    cabecalho_original = copiar_sem_fim_de_linha(linha_cabecalho);
+    if(cabecalho_original == NULL){
+        return;
+    }
+    // alguns arquivos comecam com 3 bytes invisiveis (bom): nao fazem parte do nome da coluna
+    const char *inicio_nomes = cabecalho_original;
+    if((unsigned char)inicio_nomes[0] == 0xEF && (unsigned char)inicio_nomes[1] == 0xBB &&
+       (unsigned char)inicio_nomes[2] == 0xBF){
+        inicio_nomes += 3;
+    }
+    qtd_colunas = dividir_linha_csv(inicio_nomes, &nomes_colunas); // separa o cabecalho em nomes
+    if(qtd_colunas < 0){
+        qtd_colunas = 0;
+        nomes_colunas = NULL;
+    }
+}
+
+const char *item_get_cabecalho(void){
+    return cabecalho_original;
+}
+
+const char *item_get_terminador(void){
+    return terminador_linha;
+}
+
+// 2) construtor e destruidor
+ITEM *item_criar(const char *linha_csv){
     if(linha_csv == NULL){
         return NULL;
     }
-
-    ITEM *item = (ITEM *)malloc(sizeof(ITEM));
+    ITEM *item = (ITEM *)malloc(sizeof(ITEM)); // reserva memoria para o novo registro
     if(item == NULL){
         return NULL;
     }
-
-    // - "strup" calcula o tamanho da string original, o equivalente a um strlen
-    // - e chama a funcao malloc() para reservar esse espaco na heap
-    //  - copiamos a linha_csv para o buffer para utiliza-la de forma temporaria
-    // - como a linha_csv e const precisamos colocar em outra para conseguir manipular
-    char *buffer = meu_strdup(linha_csv);
-    
-    /* - Operacoes utilizadas
-        -- atoi (ASCII to INT): converte uma string que contem um numero inteiro para o tipo int
-        -- atof (ASCII to Float/Double): converte uma string que contem um numero float ou double para um tipo double
-        -- strcmp (string compare): compara duas strings e retorna 0 se forem identica
-                    < 0 se a primeira string vier antes que a segunda
-                    > 0  se a primeira string vier depois da segunda
-        -- strtok (string tokenize): corta uma string em pedacos (tokens) utilizando um ou mais
-                    caracteres delimitadores (nesse caso, ",", "\r" ,"\n") e substitui por \0 nesses campos
-                    cortando a string
-        -- strdup (string duplicate): cria uma copia identica de uma string na memoria dinamica
-    */
-    //------- Campo 1: Texto (designation) -------
-    char *token = strtok(buffer, ",\r\n"); 
-    if(token != NULL){
-        item->asteroid_designation = meu_strdup(token);
+    item->linha = copiar_sem_fim_de_linha(linha_csv); // guarda a linha sem a quebra final
+    item->campos = NULL;
+    item->qtd_campos = 0;
+    // linha vazia nao e um registro
+    if(item->linha == NULL || item->linha[0] == '\0'){
+        free(item->linha);
+        free(item);
+        return NULL;
     }
-
-    //------- Campo 2: Texto (fullname) ----------
-    /*o strtok memoriza (guarda na "Data Segment") a ultima string passada por ele ao utilizarmos o null ele apenas continua 
-      de onde ele parou de fatiar a string, fazendo com que pudessemos cortar ela aos poucos. */
-    token = strtok(NULL, ",\r\n"); 
-    if(token != NULL){
-        item->asteroid_fullname = meu_strdup(token);
+    item->qtd_campos = dividir_linha_csv(item->linha, &item->campos); // separa a linha nas colunas
+    if(item->qtd_campos < 0){
+        free(item->linha);
+        free(item);
+        return NULL;
     }
-
-    //------- Campo 3: Texto (date) -------
-    token = strtok(NULL, ",\r\n"); 
-    if(token != NULL){
-        item->close_approach_date = meu_strdup(token);
-    }
-
-    //------- Campo 4: inteiro (year) -------
-    token = strtok(NULL, ",\r\n"); 
-    if(token != NULL){
-        item->year = atoi(token);
-    }
-
-    //------- Campo 5: inteiro (month) -------
-    token = strtok(NULL, ",\r\n"); 
-    if(token != NULL){
-        item->month = atoi(token);
-    }
-
-    //------- Campo 6: double (distance_au) -------
-    token = strtok(NULL, ",\r\n"); 
-    if(token != NULL){
-        item->distance_au = atof(token);
-    }
-
-    //------- Campo 7: double (velocity) -------
-    token = strtok(NULL, ",\r\n"); 
-    if(token != NULL){
-        item->velocity_km_s = atof(token);
-    }
-
-    //------- Campo 8: float (magnitude) -------
-    token = strtok(NULL, ",\r\n"); 
-    if(token != NULL){
-        item->absolute_magnitude = atof(token);
-    }
-
-    //------- Campo 9: inteiro (days) -------
-    token = strtok(NULL, ",\r\n"); 
-    if(token != NULL){
-        item->days_until_approach = atoi(token);
-    }
-
-    //------- Campo 10: booleano (past_event) -------
-    token = strtok(NULL, ",\r\n"); 
-    if(token != NULL){
-        item->is_past_event = (strcmp(token, "TRUE") == 0 || strcmp(token, "1") == 0);
-    }
-
-    //------- Campo 11: booleano (future_event) -------
-    token = strtok(NULL, ",\r\n"); 
-    if(token != NULL){
-        item->is_future_event = (strcmp(token, "TRUE") == 0 || strcmp(token, "1") == 0);
-    }
-
-    //------- Campo 12: double (risk) -------
-    token = strtok(NULL, ",\r\n"); 
-    if(token != NULL){
-        item->risk_score = atof(token);
-    }
-
-    //------- Campo 13: inteiro (panic_level) -------
-    token = strtok(NULL, ",\r\n"); 
-    if(token != NULL){
-        item->panic_level = atoi(token);
-    }
-
-    //------- Campo 14: Texto (threat_category) -------
-    token = strtok(NULL, ",\r\n"); 
-    if(token != NULL){
-        item->threat_category = meu_strdup(token);
-    }
-    //------- Campo 15: Texto (panic_verdict) -------
-    token = strtok(NULL, ",\r\n"); 
-    if(token != NULL){
-        item->panic_verdict = meu_strdup(token);
-    }
-    //------- Campo 16: booleano (on_sentry_list) -------
-    token = strtok(NULL, ",\r\n"); 
-    if(token != NULL){
-        item->on_sentry_list = (strcmp(token, "TRUE") == 0 || strcmp(token, "1") == 0);
-    }
-
-    //------- Campo 17: double (impact_prob) -------
-    token = strtok(NULL, ",\r\n"); 
-    if(token != NULL){
-        item->sentry_impact_prob = atof(token);
-    }
-
-    //------- Campo 18: inteiro (torino_scale) -------
-    token = strtok(NULL, ",\r\n"); 
-    if(token != NULL){
-        item->sentry_torino_scale = atoi(token);
-    }
-
-    //------- Campo 19: float (palermo_scale) -------
-    token = strtok(NULL, ",\r\n"); 
-    if(token != NULL){
-        item->sentry_palermo_scale = atof(token);
-    }
-
-    //------- Campo 20: inteiro (diameter_km) -------
-    token = strtok(NULL, ",\r\n"); 
-    if(token != NULL){
-        item->sentry_diameter_km = atoi(token);
-    }
-
-    free(buffer); // Libera a folha de rascunho temporaria
-    return item; // Retorna o ponteiro para o ITEM totalmente preenchido
+    return item;
 }
-
 
 void item_apagar(ITEM **item){
     if(item == NULL || *item == NULL){
         return;
     }
-
-    /* Ao liberar a memoria dessa forma garante que nao tera 
-       nenhum ponteiro solto, evitando o dangling pointer.*/
-    free((*item)->asteroid_designation);
-    (*item)->asteroid_designation = NULL;
-
-    free((*item)->asteroid_fullname);
-    (*item)->asteroid_fullname = NULL;
-
-    free((*item)->close_approach_date);
-    (*item)->close_approach_date = NULL;
-
-    free((*item)->threat_category);
-    (*item)->threat_category = NULL;
-
-    free((*item)->panic_verdict);
-    (*item)->panic_verdict = NULL;
-
-    free(*item);
-
+    liberar_campos((*item)->campos, (*item)->qtd_campos);
+    free((*item)->linha); // libera a linha original
+    free(*item); // libera a estrutura do item
     *item = NULL;
 }
 
-// 2) GETTERS para as buscas
-
-// - Filtros (FILTER)
-double item_get_distancia(const ITEM *item){
-    if(item == NULL){
-        return 0.0;
+// 3) acesso pelo nome da coluna
+const char *item_get_campo(const ITEM *item, const char *nome_campo){
+    if(item == NULL || nome_campo == NULL){
+        return NULL;
     }
-    return item->distance_au;
+    for(int i = 0; i < qtd_colunas && i < item->qtd_campos; i++){
+        if(strcmp(nomes_colunas[i], nome_campo) == 0){ // procura a coluna pelo nome
+            if(item->campos[i][0] == '\0'){
+                return NULL; // valor ausente
+            }
+            return item->campos[i];
+        }
+    }
+    return NULL;
 }
-bool item_get_is_future_event(const ITEM *item){
-    if(item == NULL){
+
+bool item_converter_numero(const char *texto, double *valor){
+    if(texto == NULL || valor == NULL){
         return false;
     }
-    return item->is_future_event;
+    if(textos_iguais_sem_caixa(texto, "true")){
+        *valor = 1.0;
+        return true;
+    }
+    if(textos_iguais_sem_caixa(texto, "false")){
+        *valor = 0.0;
+        return true;
+    }
+    char *fim;
+    double numero = strtod(texto, &fim); // converte o texto e aponta onde a conversao parou
+    if(fim == texto){
+        return false; // nao comecou com numero
+    }
+    while(*fim == ' '){
+        fim++;
+    }
+    if(*fim != '\0'){
+        return false; // sobrou texto depois do numero
+    }
+    *valor = numero;
+    return true;
 }
 
-// - Similaridades (SIM)
+bool item_get_campo_numerico(const ITEM *item, const char *nome_campo, double *valor){
+    return item_converter_numero(item_get_campo(item, nome_campo), valor);
+}
+
+// 4) getters
+double item_get_distancia(const ITEM *item){
+    double valor = 0.0;
+    item_get_campo_numerico(item, "distance_au", &valor);
+    return valor;
+}
+
+bool item_get_is_future_event(const ITEM *item){
+    const char *texto = item_get_campo(item, "is_future_event");
+    return texto != NULL && textos_iguais_sem_caixa(texto, "true");
+}
+
 double item_get_velocidade(const ITEM *item){
-    if(item == NULL){
-        return 0.0;
-    }
-    return item->velocity_km_s; 
+    double valor = 0.0;
+    item_get_campo_numerico(item, "velocity_km_s", &valor);
+    return valor;
 }
 
 double item_get_risk_score(const ITEM *item){
-    if(item == NULL){
-        return 0.0;
-    }
-    return item->risk_score; 
+    double valor = 0.0;
+    item_get_campo_numerico(item, "risk_score", &valor);
+    return valor;
 }
 
-// - Por Agrupamento e Listas Avancadas (GROUP e CROSS)
 const char *item_get_threat_category(const ITEM *item){
-    if(item == NULL){
-        return NULL;
-    }
-    return item->threat_category;
+    return item_get_campo(item, "threat_category");
 }
 
 int item_get_year(const ITEM *item){
-    if(item == NULL){
-        return 0;
-    }
-    return item->year;
+    double valor = 0.0;
+    item_get_campo_numerico(item, "year", &valor);
+    return (int)valor;
 }
 
-// - Para identificacao
-const char *item_get_designation(const ITEM *item){ 
-    if(item == NULL){
+// primeira coluna da linha (vazia = ausente)
+const char *item_get_identificador(const ITEM *item){
+    if(item == NULL || item->qtd_campos < 1 || item->campos[0][0] == '\0'){
         return NULL;
     }
-    return item->asteroid_designation;
+    return item->campos[0];
 }
 
-// 3) Impressao
+const char *item_get_designation(const ITEM *item){
+    return item_get_campo(item, "asteroid_designation");
+}
+// 5) impressao: a linha sai exatamente como estava no arquivo de entrada
 void item_imprimir_csv(const ITEM *item, FILE *fp){
-    if(item == NULL){
+    if(item == NULL || fp == NULL){
         return;
     }
-
-    fp = fopen("dados/asteroids.csv", "w");
-    if(fp == NULL){
-        return; //Erro ao abrir o arquivo.
-    }
-    
-    fprintf(fp, "%s,%s,%s,%d,%d,%.6f,%.6f,%.2f,%d,%s,%s,%.6f,%d,%s,%s,%s,%.8f,%d,%.2f,%d",
-        item->asteroid_designation,
-        item->asteroid_fullname,
-        item->close_approach_date,
-        item->year,
-        item->month,
-        item->distance_au,
-        item->velocity_km_s,
-        item->absolute_magnitude,
-        item->days_until_approach,
-        item->is_past_event ? "TRUE" : "FALSE",
-        item->is_future_event ? "TRUE" : "FALSE",
-        item->risk_score,
-        item->panic_level,
-        item->threat_category,
-        item->panic_verdict,
-        item->on_sentry_list ? "TRUE" : "FALSE",
-        item->sentry_impact_prob,
-        item->sentry_torino_scale,
-        item->sentry_palermo_scale,
-        item->sentry_diameter_km);
-
-    fclose(fp);
+    fprintf(fp, "%s%s", item->linha, terminador_linha);
 }

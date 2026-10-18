@@ -1,19 +1,9 @@
 #ifndef READER_NASA_H
 #define READER_NASA_H
 
-#include "item.h"
+#include "estrutura.h"
 
-/* - Recebe o caminho do CSV, o limite de registros e um ponteiro para retornar
-   o total lido 
-   - Retorn um vetor dinamico de ponteiros para ITEM (ITEM **)
-   
-   - caminho_csv: o caminho do arquivo no disco, o const garante que nao sera alterado
-   - limit: o limite de registros a serem lidos definido pelo (--limit)
-   - total_lidos: o total de asteroides que foram passados para serem lidos, que pode mudar
-   nao e exatamente igual ao limit, pode ser uma quantidade diferente.
-*/
+// - le o csv da nasa e vai inserindo cada registro direto na estrutura --base - caminho_csv: o caminho do arquivo no disco, o const garante que nao sera alterado - limit: o limite de registros a serem lidos definido pelo (--limit), 0 = le tudo - base: estrutura que recebe os itens durante a leitura antes de ler os registros, define o cabecalho (nomes das colunas) no item. retorna a quantidade de registros lidos ou -1 se houver erro (arquivo inexistente, falta de memoria...). quem chamou deve chamar item_liberar_cabecalho() no final do programa.
+int reader_nasa_carregar(const char *caminho_csv, int limit, ESTRUTURA *base);
 
-ITEM **reader_nasa_csv(const char *caminho_csv, int limit, int *total_lidos);
-void reader_nasa_desalocar(ITEM ***vetor, int total_lidos);
-
-#endif  
+#endif
