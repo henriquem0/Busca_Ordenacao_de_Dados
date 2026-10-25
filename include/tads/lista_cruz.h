@@ -6,7 +6,7 @@
 
 typedef struct lista_cruz LISTA_CRUZ;
 
-// a lista cruzada tem duas organizacoes ao mesmo tempo (eixos). cada item existe uma unica vez, mas participa de uma cadeia do eixo a e de uma do eixo b ex: eixo a = threat_category, eixo b = year;
+// a lista cruzada tem duas organizacoes ao mesmo tempo (eixos). cada item existe uma unica vez;
 
 typedef enum {
     LISTA_CRUZ_EIXO_A = 0, // eixo a

@@ -1,0 +1,5 @@
+FILTER|is_future_event|==|false
+FILTER|distance_au|<=|0.05
+SIM|velocity_km_s|20.0|10.0|1.0
+ACCEPT|0.20
+ORDER|similarity|DESC

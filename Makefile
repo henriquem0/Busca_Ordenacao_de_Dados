@@ -17,7 +17,7 @@ OBJ = $(BUILD_DIR)/main.o \
 	  $(BUILD_DIR)/item.o \
 	  $(BUILD_DIR)/query.o \
 	  $(BUILD_DIR)/estrutura.o \
-	  $(BUILD_DIR)/reader_nasa.o \
+	  $(BUILD_DIR)/reader_antt.o \
 	  $(TADS_OBJ)
 
 .PHONY: all run clean teste
@@ -32,7 +32,7 @@ $(TARGET): $(OBJ)
 	$(CC) $(OBJ) -o $@
 
 # compila os modulos individuais
-$(BUILD_DIR)/main.o: apps/main.c include/cli.h include/item.h include/query.h include/estrutura.h include/reader_nasa.h | $(BUILD_DIR)
+$(BUILD_DIR)/main.o: apps/main.c include/cli.h include/item.h include/query.h include/estrutura.h include/reader_antt.h | $(BUILD_DIR)
 	$(CC) -c apps/main.c -o $(BUILD_DIR)/main.o $(CFLAGS)
 
 $(BUILD_DIR)/cli.o: source/cli.c include/cli.h | $(BUILD_DIR)
@@ -47,8 +47,8 @@ $(BUILD_DIR)/query.o: source/query.c include/query.h include/item.h | $(BUILD_DI
 $(BUILD_DIR)/estrutura.o: source/estrutura.c include/estrutura.h include/query.h include/item.h | $(BUILD_DIR)
 	$(CC) -c source/estrutura.c -o $(BUILD_DIR)/estrutura.o $(CFLAGS)
 
-$(BUILD_DIR)/reader_nasa.o: source/reader_nasa.c include/reader_nasa.h include/estrutura.h include/item.h | $(BUILD_DIR)
-	$(CC) -c source/reader_nasa.c -o $(BUILD_DIR)/reader_nasa.o $(CFLAGS)
+$(BUILD_DIR)/reader_antt.o: source/reader_antt.c include/reader_antt.h include/estrutura.h include/item.h | $(BUILD_DIR)
+	$(CC) -c source/reader_antt.c -o $(BUILD_DIR)/reader_antt.o $(CFLAGS)
 
 # compila os tads
 $(BUILD_DIR)/pilha.o: source/tads/pilha.c include/tads/pilha.h include/item.h | $(BUILD_DIR)
@@ -77,8 +77,7 @@ $(BUILD_DIR)/lista_cruz.o: source/tads/lista_cruz.c include/tads/lista_cruz.h in
 
 # executa um exemplo com a base inteira
 run: $(TARGET)
-	./$(TARGET) --reader nasa --input dados/asteroids.csv --base lista_enc --result lista_ord --query consultas/q1.txt --output resultado.csv --top-k 100 --limit 0
-
+	./$(TARGET) --reader antt --input dados/asteroids.csv --base lista_seq --result lista_ord --query consultas/q3.txt --output resultado.csv --top-k 20 --limit 10000
 # executa os testes unitarios dos tads
 teste:
 	$(MAKE) -C tests run

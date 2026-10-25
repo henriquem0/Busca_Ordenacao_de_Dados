@@ -9,6 +9,7 @@ struct item_{
     char *linha;    // linha original do csv, sem o fim de linha (usada na saida)
     char **campos;  // valor de cada coluna, sem as aspas
     int qtd_campos;
+    char id[16]; //O id é um char para evitar mexer em todos os TADs de listas
 };
 
 // cabecalho do dataset. fica no modulo porque e igual para todos os itens de um mesmo arquivo: o leitor define uma vez e os itens consultam.
@@ -16,8 +17,7 @@ static char **nomes_colunas = NULL;
 static int qtd_colunas = 0;
 static char *cabecalho_original = NULL;
 static char terminador_linha[3] = "\n";
-
-
+static int prox_id = 1;
 
 
 // funcao auxiliar para duplicar as strings e alocar dinamicamente
@@ -58,22 +58,20 @@ static void liberar_campos(char **campos, int qtd){
 
 
 // compara dois textos ignorando maiusculas e minusculas ("true" == "true")
-static bool textos_iguais_sem_caixa(const char *a, const char *b){
-
-    while(*a != '\0' && *b != '\0'){
-        if(tolower((unsigned char)*a) != tolower((unsigned char)*b)){
+static bool textos_iguais_sem_caixa(const char *a, const char *b)
+{
+    while(*a != '\0' && *b != '\0')
+    {
+        if(tolower((unsigned char) *a) != tolower((unsigned char) *b))
+        {
             return false;
         }
         a++;
         b++;
     }
 
-
-
     return *a == '\0' && *b == '\0';
 }
-
-
 
 
 
@@ -86,7 +84,7 @@ static int dividir_linha_csv(const char *linha, char ***campos_saida){
         if(linha[i] == '"'){
             entre_aspas = !entre_aspas;
         }
-        else if(linha[i] == ',' && !entre_aspas){
+        else if(linha[i] == ';' && !entre_aspas){
             qtd++;
         }
     }
@@ -120,7 +118,7 @@ static int dividir_linha_csv(const char *linha, char ***campos_saida){
                 entre_aspas = !entre_aspas;
             }
         }
-        else if((atual == ',' && !entre_aspas) || atual == '\0'){
+        else if((atual == ';' && !entre_aspas) || atual == '\0'){
             buffer[tam_buffer] = '\0';
             campos[indice_campo] = meu_strdup(buffer); // salva uma copia do campo montado
             if(campos[indice_campo] == NULL){
@@ -173,6 +171,7 @@ void item_liberar_cabecalho(void){
     free(cabecalho_original);
     cabecalho_original = NULL;
     strcpy(terminador_linha, "\n"); // volta ao terminador padrao
+    prox_id = 1;
 }
 
 void item_definir_cabecalho(const char *linha_cabecalho){
@@ -221,6 +220,8 @@ ITEM *item_criar(const char *linha_csv){
     item->linha = copiar_sem_fim_de_linha(linha_csv); // guarda a linha sem a quebra final
     item->campos = NULL;
     item->qtd_campos = 0;
+    item->id[0] = '\0';
+
     // linha vazia nao e um registro
     if(item->linha == NULL || item->linha[0] == '\0'){
         free(item->linha);
@@ -233,6 +234,9 @@ ITEM *item_criar(const char *linha_csv){
         free(item);
         return NULL;
     }
+
+    snprintf(item->id, sizeof(item->id), "%d", prox_id++);
+
     return item;
 }
 
@@ -274,19 +278,35 @@ bool item_converter_numero(const char *texto, double *valor){
         *valor = 0.0;
         return true;
     }
+
+    char *copia = meu_strdup(texto);
+
+    if(!copia)
+    {return false;}
+
+    char *p = strchr(copia, ',');
+
+    if(p)
+    {*p = '.';}
+    
     char *fim;
-    double numero = strtod(texto, &fim); // converte o texto e aponta onde a conversao parou
-    if(fim == texto){
-        return false; // nao comecou com numero
-    }
-    while(*fim == ' '){
-        fim++;
-    }
-    if(*fim != '\0'){
-        return false; // sobrou texto depois do numero
-    }
-    *valor = numero;
-    return true;
+    
+    double n = strtod(copia, &fim);
+    
+    bool ok = (fim != copia);
+
+    while(ok && *fim == ' ')
+    {fim++;}
+
+    if(ok && *fim != '\0')
+    {ok = false;}
+
+    free(copia);
+
+    if(!ok)
+    {return false;}
+
+    *valor = n; return true;
 }
 
 bool item_get_campo_numerico(const ITEM *item, const char *nome_campo, double *valor){
@@ -294,50 +314,128 @@ bool item_get_campo_numerico(const ITEM *item, const char *nome_campo, double *v
 }
 
 // 4) getters
-double item_get_distancia(const ITEM *item){
+const char *item_get_consessionaria(const ITEM *item){
+    return item_get_campo(item, "concessionaria");
+}
+
+int item_get_id_sigicor(const ITEM *item)
+{
     double valor = 0.0;
-    item_get_campo_numerico(item, "distance_au", &valor);
-    return valor;
+    if(!item_get_campo_numerico(item, "id_sigicor", &valor))
+    {
+        return (int) -1;
+    }
+    return (int) valor;
 }
 
-bool item_get_is_future_event(const ITEM *item){
-    const char *texto = item_get_campo(item, "is_future_event");
-    return texto != NULL && textos_iguais_sem_caixa(texto, "true");
+const char *item_get_emissao_sei(const ITEM *item)
+{
+    return item_get_campo(item, "emitida_no_SEI");
 }
 
-double item_get_velocidade(const ITEM *item){
+const char *item_get_autorizacao_sei(const ITEM *item)
+{
+    return item_get_campo(item, "processo_SEI_Autorização");
+}
+
+int item_get_numero_sei(const ITEM *item)
+{
     double valor = 0.0;
-    item_get_campo_numerico(item, "velocity_km_s", &valor);
-    return valor;
-}
-
-double item_get_risk_score(const ITEM *item){
-    double valor = 0.0;
-    item_get_campo_numerico(item, "risk_score", &valor);
-    return valor;
-}
-
-const char *item_get_threat_category(const ITEM *item){
-    return item_get_campo(item, "threat_category");
-}
-
-int item_get_year(const ITEM *item){
-    double valor = 0.0;
-    item_get_campo_numerico(item, "year", &valor);
+    if(!item_get_campo_numerico(item, "n_SEI", &valor))
+    {
+        return (int) -1;
+    }
     return (int)valor;
 }
 
-// primeira coluna da linha (vazia = ausente)
-const char *item_get_identificador(const ITEM *item){
-    if(item == NULL || item->qtd_campos < 1 || item->campos[0][0] == '\0'){
-        return NULL;
-    }
-    return item->campos[0];
+const char *item_get_item_do_per(const ITEM *item)
+{
+    return item_get_campo(item, "item_do_PER");
 }
 
-const char *item_get_designation(const ITEM *item){
-    return item_get_campo(item, "asteroid_designation");
+const char *item_get_origem_per(const ITEM *item)
+{
+    return item_get_campo(item, "origem_PER");
 }
+
+const char *item_get_tipo_obra(const ITEM *item)
+{
+    return item_get_campo(item, "tipo_de_Obra");
+}
+
+const char *item_get_rodovia(const ITEM *item)
+{
+    return item_get_campo(item, "rodovia");
+}
+
+double item_get_km_inicio(const ITEM *item)
+{
+    double valor = 0.0;
+    if(!item_get_campo_numerico(item, "km_Inicial", &valor))
+    {
+        return (double) -1.0;
+    }
+    return (double) valor;
+}
+
+double item_get_km_final(const ITEM *item)
+{
+    double valor = 0.0;
+    if(!item_get_campo_numerico(item, "km_Final", &valor))
+    {
+        return (double) -1.0;
+    }
+    return (double) valor;
+}
+
+const char *item_get_prazo(const ITEM *item)
+{
+    return item_get_campo(item, "prazo_Concessão");
+}
+
+const char *item_get_tipo_projeto(const ITEM *item)
+{
+    return item_get_campo(item, "tipo_de_Projeto");
+}
+
+const char *item_get_status_projeto(const ITEM *item)
+{
+    return item_get_campo(item, "situação_do_Projeto");
+}
+
+const char *item_get_processo(const ITEM *item)
+{
+    return item_get_campo(item, "processo");
+}
+
+double item_get_KmInicio(const ITEM *item)
+{
+    double valor = 0.0;
+
+    if(!item_get_campo_numerico(item, "km_inicial", &valor))
+    {
+        return (double) -1.0;
+    }
+    return (double) valor;
+}
+
+double item_get_KmFim(const ITEM *item)
+{
+    double valor = 0.0;
+    if(!item_get_campo_numerico(item, "km_final", &valor))
+    {
+        return (double) -1.0;
+    }
+    return (double) valor;
+}
+// O id é o número da linha
+const char *item_get_identificador(const ITEM *item){
+    if(item == NULL || item->id[0] == '\0'){
+        return NULL;
+    }
+    return item->id;
+}
+
 // 5) impressao: a linha sai exatamente como estava no arquivo de entrada
 void item_imprimir_csv(const ITEM *item, FILE *fp){
     if(item == NULL || fp == NULL){

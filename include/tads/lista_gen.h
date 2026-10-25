@@ -6,7 +6,7 @@
 
 typedef struct lista_gen LISTA_GEN;
 
-// cria a lista generalizada: itens organizados em grupos e, dentro de cada grupo, em subgrupos (ex: grupo = threat_category, subgrupo = year).
+// cria a lista generalizada: itens organizados em grupos e, dentro de cada grupo, em subgrupos.
 LISTA_GEN *lista_gen_criar(void);
 
 

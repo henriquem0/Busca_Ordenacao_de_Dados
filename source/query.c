@@ -60,6 +60,15 @@ static void tirar_espacos(char *texto){
     texto[fim - inicio] = '\0';
 }
 
+// converte o texto da consulta em numero aceitando virgula ou ponto decimal. se nao for numero, vale 0.
+static double ler_numero(const char *texto){
+    double valor = 0.0;
+    if(texto != NULL && item_converter_numero(texto, &valor)){
+        return valor;
+    }
+    return 0.0;
+}
+
 // copia o texto para o destino sem estourar o tamanho dele
 static void copiar_seguro(char *destino, const char *origem, int tamanho){
     strncpy(destino, origem, tamanho - 1);
@@ -110,7 +119,7 @@ QUERY *query_carregar(const char *caminho_query){
         tirar_espacos(cmd);
 
         if(strcmp(cmd,"FILTER") == 0){
-            char *campo_filt = proximo_pedaco(); // por exemplo "is_future_event"
+            char *campo_filt = proximo_pedaco();
             char *oper = proximo_pedaco(); // por exemplo '<='
             char *val = proximo_pedaco(); // por exemplo "true"
 
@@ -131,12 +140,12 @@ QUERY *query_carregar(const char *caminho_query){
             char *peso_str = proximo_pedaco();
 
             if(campo_sim && alvo_str && tolerancia_str && peso_str && q->qtda_sims < MAX_REGRAS){
-                // necessario para transformar a string em um valor double. utilizacao do atof: que tranforma string em um float.
+                // necessario para transformar a string em um valor double. utilizacao do ler_numero: que tranforma string em um float e trata o caso de 0,0 que vira 0.0.
                 SimRule *regra = &q->sims[q->qtda_sims];
                 copiar_seguro(regra->campo_sim, campo_sim, TAM_TEXTO);
-                regra->alvo = atof(alvo_str); // converte o alvo para numero
-                regra->tolerancia = atof(tolerancia_str); // converte a tolerancia para numero
-                regra->peso = atof(peso_str); // converte o peso para numero
+                regra->alvo = ler_numero(alvo_str); // converte o alvo para numero
+                regra->tolerancia = ler_numero(tolerancia_str); // converte a tolerancia para numero
+                regra->peso = ler_numero(peso_str); // converte o peso para numero
                 q->qtda_sims++;
             }
         }
@@ -144,7 +153,7 @@ QUERY *query_carregar(const char *caminho_query){
             char *limiar_str = proximo_pedaco();
 
             if(limiar_str != NULL) {
-                q->limiar_accept = atof(limiar_str); // converte o limite de aceitacao
+                q->limiar_accept = ler_numero(limiar_str); // converte o limite de aceitacao
             }
         }
         else if(strcmp(cmd,"ORDER") == 0){

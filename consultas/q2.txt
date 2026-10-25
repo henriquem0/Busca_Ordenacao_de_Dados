@@ -1,8 +1,8 @@
-FILTER|is_future_event|==|true
-FILTER|distance_au|<=|0.08
-SIM|velocity_km_s|15.0|10.0|1.0
-SIM|risk_score|0.70|0.30|2.0
+FILTER|km_Inicial|>=|100
+FILTER|km_Inicial|<=|400
+SIM|km_Inicial|250|100|1.0
+SIM|km_Final|300|100|0.5
 ACCEPT|0.30
 ORDER|similarity|DESC
-GROUP|threat_category|year
-CROSS|threat_category|year
+GROUP|concessionaria|tipo_de_Projeto
+CROSS|concessionaria|tipo_de_Projeto
