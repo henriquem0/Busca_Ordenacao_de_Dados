@@ -1,8 +1,4 @@
-FILTER|km_Inicial|>=|100
-FILTER|km_Inicial|<=|400
-SIM|km_Inicial|250|100|1.0
-SIM|km_Final|300|100|0.5
+FILTER|emitida_no_SEI|==|Sim
+SIM|km_Inicial|213.1|100.0|1.0
 ACCEPT|0.30
 ORDER|similarity|DESC
-GROUP|concessionaria|tipo_de_Projeto
-CROSS|concessionaria|tipo_de_Projeto

@@ -77,7 +77,7 @@ $(BUILD_DIR)/lista_cruz.o: source/tads/lista_cruz.c include/tads/lista_cruz.h in
 
 # executa um exemplo com a base inteira
 run: $(TARGET)
-	./$(TARGET) --reader antt --input dados/asteroids.csv --base lista_seq --result lista_ord --query consultas/q3.txt --output resultado.csv --top-k 20 --limit 10000
+	./$(TARGET) --reader antt --input dados/autorizacao-investimento-utf8.csv --base lista_cabeca --result lista_cruz --query consultas/q3.txt --output resultado.csv --top-k 10 --limit 1000
 # executa os testes unitarios dos tads
 teste:
 	$(MAKE) -C tests run

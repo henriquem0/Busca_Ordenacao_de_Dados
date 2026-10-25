@@ -75,26 +75,55 @@ static bool textos_iguais_sem_caixa(const char *a, const char *b)
 
 
 
+static char detectar_delimitador(const char *linha) {
+    int virgulas = 0;
+    int ponto_virgulas = 0;
+    int entre_aspas = 0;
+
+    for (int i = 0; linha[i] != '\0'; i++) {
+        if (linha[i] == '"') {
+            // Aspas duplicadas dentro de um campo escapado
+            if (entre_aspas && linha[i + 1] == '"') {
+                i++;
+                continue;
+            }
+            entre_aspas = !entre_aspas;
+        } else if (!entre_aspas) {
+            if (linha[i] == ',') {
+                virgulas++;
+            } else if (linha[i] == ';') {
+                ponto_virgulas++;
+            }
+        }
+    }
+
+    return (virgulas > ponto_virgulas) ? ',' : ';';
+}
+
+
 // divide uma linha csv em colunas. uma virgula dentro de aspas faz parte do texto, por isso o laco controla se estamos "entre aspas". colunas vazias (",,") viram texto vazio. devolve a quantidade de colunas ou -1 se faltar memoria.
-static int dividir_linha_csv(const char *linha, char ***campos_saida){
+static int dividir_linha_csv(const char *linha, char ***campos_saida) {
+    char delimitador = detectar_delimitador(linha);
     int qtd = 1;
     bool entre_aspas = false;
 
-    for(int i = 0; linha[i] != '\0'; i++){
-        if(linha[i] == '"'){
+    // Conta as colunas, ignorando separadores dentro de aspas
+    for (int i = 0; linha[i] != '\0'; i++) {
+        if (linha[i] == '"') {
+            if (entre_aspas && linha[i + 1] == '"') {
+                i++;
+                continue;
+            }
             entre_aspas = !entre_aspas;
-        }
-        else if(linha[i] == ';' && !entre_aspas){
+        } else if (linha[i] == delimitador && !entre_aspas) {
             qtd++;
         }
     }
 
-    char *buffer = (char *)malloc(strlen(linha) + 1); // cria um buffer para montar cada campo
+    char *buffer = malloc(strlen(linha) + 1);
+    char **campos = calloc(qtd, sizeof(char *));
 
-    char **campos = (char **)calloc(qtd, sizeof(char *)); // cria o vetor de colunas zerado
-
-
-    if(buffer == NULL || campos == NULL){
+    if (buffer == NULL || campos == NULL) {
         free(buffer);
         free(campos);
         return -1;
@@ -104,54 +133,42 @@ static int dividir_linha_csv(const char *linha, char ***campos_saida){
     int tam_buffer = 0;
     entre_aspas = false;
 
-
-    for(int i = 0; ; i++){
+    // Separa os campos e trata aspas duplicadas
+    for (int i = 0; ; i++) {
         char atual = linha[i];
 
-
-        if(atual == '"'){
-            if(entre_aspas && linha[i + 1] == '"'){
-                buffer[tam_buffer++] = '"'; // transforma duas aspas csv em uma
+        if (atual == '"') {
+            if (entre_aspas && linha[i + 1] == '"') {
+                buffer[tam_buffer++] = '"';
                 i++;
-            }
-            else{
+            } else {
                 entre_aspas = !entre_aspas;
             }
-        }
-        else if((atual == ';' && !entre_aspas) || atual == '\0'){
+        } else if ((atual == delimitador && !entre_aspas)
+                   || atual == '\0') {
             buffer[tam_buffer] = '\0';
-            campos[indice_campo] = meu_strdup(buffer); // salva uma copia do campo montado
-            if(campos[indice_campo] == NULL){
+            campos[indice_campo] = meu_strdup(buffer);
+
+            if (campos[indice_campo] == NULL) {
                 liberar_campos(campos, indice_campo);
-                free(buffer); // libera o buffer temporario
+                free(buffer);
                 return -1;
             }
+
             indice_campo++;
             tam_buffer = 0;
-            if(atual == '\0'){
+
+            if (atual == '\0') {
                 break;
             }
-        }
-        else{
+        } else {
             buffer[tam_buffer++] = atual;
         }
-
-
-
     }
-
-
-
-
     free(buffer);
     *campos_saida = campos;
     return qtd;
 }
-
-
-
-
-
 
 
 // guarda uma copia da linha sem o '\r' e o '\n' do final
