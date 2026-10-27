@@ -1,0 +1,4 @@
+FILTER|emitida_no_SEI|==|Sim
+SIM|km_Inicial|213.1|100.0|1.0
+ACCEPT|0.30
+ORDER|similarity|DESC

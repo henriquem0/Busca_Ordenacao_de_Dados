@@ -5,7 +5,7 @@ CC = gcc
 # -d_posix_c_source habilita clock_gettime no c99
 CFLAGS = -Wall -Wextra -std=c99 -pedantic -I include -D_POSIX_C_SOURCE=199309L
 
-BUILD_DIR = build
+BUILD_DIR = trabalho
 
 TARGET = $(BUILD_DIR)/trabalho
 
@@ -22,11 +22,11 @@ OBJ = $(BUILD_DIR)/main.o \
 
 .PHONY: all run clean teste
 
-$(BUILD_DIR):
-	mkdir -p $(BUILD_DIR)
-
 # gera o executavel principal
 all: $(TARGET)
+	
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
 
 $(TARGET): $(OBJ)
 	$(CC) $(OBJ) -o $@
@@ -78,11 +78,7 @@ $(BUILD_DIR)/lista_cruz.o: source/tads/lista_cruz.c include/tads/lista_cruz.h in
 # executa um exemplo com a base inteira
 run: $(TARGET)
 	./$(TARGET) --reader antt --input dados/autorizacao-investimento-utf8.csv --base lista_cabeca --result lista_cruz --query consultas/q3.txt --output resultado.csv --top-k 10 --limit 1000
-# executa os testes unitarios dos tads
-teste:
-	$(MAKE) -C tests run
 
 # remove arquivos gerados
 clean:
 	rm -rf $(BUILD_DIR) resultado.csv
-	$(MAKE) -C tests clean

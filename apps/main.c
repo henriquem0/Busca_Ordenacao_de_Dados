@@ -252,7 +252,5 @@ int main(int argc, char *argv[]) {
     printf("SEARCH_MS=%.3f\n", mediana(buscas));
     printf("RESULT_INSERT_MS=%.3f\n", mediana(insercoes));
     printf("WRITE_MS=%.3f\n", mediana(escritas));
-    double soma = (mediana(loads) + mediana(buscas) + mediana(insercoes) + mediana(escritas));
-    printf("total: %.3f\n", soma);
     return 0;
 }
