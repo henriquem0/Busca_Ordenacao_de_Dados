@@ -5,6 +5,36 @@
 #include "item.h"
 #include "query.h"
 
+/*
+ * ESTRUTURAS DE DADOS (TADs)
+ *
+ * O programa permite selecionar diferentes estruturas de dados:
+ * pilha, fila, lista_seq, lista_enc, lista_cabeca, lista_ord,
+ * lista_gen e lista_cruz.
+ *
+ * Cada estrutura deve possuir sua própria implementação e respeitar
+ * suas características de organização, inserção, busca, remoção e
+ * percurso. A escolha feita pelo usuário deve alterar efetivamente
+ * a forma como os registros são armazenados e manipulados.
+ *
+ * IMPORTANTE:
+ * - PILHA: segue a política LIFO (último a entrar, primeiro a sair).
+ * - FILA: segue a política FIFO (primeiro a entrar, primeiro a sair).
+ * - LISTA_SEQ: armazena os elementos sequencialmente.
+ * - LISTA_ENC: conecta os nós por meio de ponteiros.
+ * - LISTA_CABECA: possui um nó cabeça/sentinela real, que não
+ *   representa um registro.
+ * - LISTA_ORD: mantém os elementos ordenados durante as inserções,
+ *   sem depender de uma ordenação posterior.
+ * - LISTA_GEN: permite organizar elementos em grupos e subgrupos.
+ * - LISTA_CRUZ: permite organizar os mesmos registros em duas
+ *   dimensões simultâneas, sem duplicar os registros.
+ *
+ * Todas as estruturas devem ser implementadas pelo grupo por meio
+ * de TADs próprios, sem substituir suas implementações por
+ * contêineres prontos de bibliotecas externas.
+ */
+
 // strutura e a "capa" que deixa o programa escolher, em tempo de execucao, qual tad vai guardar os itens (--base e --result). o resto do programa so chama as funcoes estrutura_*, sem saber qual tad esta por baixo.
 typedef struct estrutura_ ESTRUTURA; 
 

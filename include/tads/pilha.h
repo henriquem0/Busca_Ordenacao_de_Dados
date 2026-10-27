@@ -4,6 +4,22 @@
 #include <stdbool.h> 
 #include "item.h"
 
+/*
+ * PILHA (LIFO)
+ *
+ * A pilha organiza os elementos segundo a política LIFO
+ * (Last In, First Out), em que o último elemento inserido
+ * é o primeiro a ser removido.
+ *
+ * As inserções e remoções devem ocorrer no topo da pilha.
+ * A implementação deve manter uma referência ao topo e
+ * atualizar essa referência conforme os elementos são inseridos
+ * ou removidos.
+ *
+ * O percurso deve respeitar a organização da pilha, sem
+ * transformá-la em outra estrutura de dados.
+ */
+
 typedef struct pilha PILHA;
 
 // cria e inicializa a pilha

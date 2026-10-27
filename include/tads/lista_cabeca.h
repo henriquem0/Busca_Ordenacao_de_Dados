@@ -4,6 +4,16 @@
 #include <stdbool.h>
 #include "item.h"
 
+/*
+ * LISTA COM CABEÇA (SENTINELA)
+ *
+ * Esta lista possui um nó cabeça real, que não armazena um registro
+ * válido da base. O nó sentinela serve como ponto inicial da lista.
+ *
+ * As operações de inserção, busca, remoção e percurso devem
+ * considerar essa representação, sem tratar o nó cabeça como dado.
+ */
+
 typedef struct lista_cabeca LISTA_CABECA;
 
 // cria a lista e o no cabeca (no estrutural que nao guarda nenhum item)

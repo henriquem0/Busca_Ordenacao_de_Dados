@@ -4,6 +4,17 @@
 #include <stdbool.h>
 #include "item.h"
 
+/*
+ * LISTA ORDENADA
+ *
+ * Os elementos devem permanecer ordenados de acordo com o critério
+ * definido pela implementação. A posição de inserção deve ser
+ * determinada no momento em que cada elemento é inserido.
+ *
+ * Não é permitido inserir todos os elementos e ordenar a lista
+ * somente ao final do processamento.
+ */
+
 typedef struct lista_ord LISTA_ORD;
 
 // cria a lista ordenada. se decrescente for true, o maior valor de chave fica no inicio (order|similarity|desc); senao, o menor fica no inicio.

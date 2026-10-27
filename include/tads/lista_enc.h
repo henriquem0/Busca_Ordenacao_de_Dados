@@ -4,6 +4,22 @@
 #include <stdbool.h>
 #include "item.h"
 
+/*
+ * LISTA ENCADEADA
+ *
+ * A lista encadeada organiza os elementos por meio de nós
+ * conectados por ponteiros. Cada nó armazena um registro
+ * ou uma referência ao registro e um ponteiro para o próximo nó.
+ *
+ * Os elementos não precisam ocupar posições consecutivas
+ * na memória. A inserção e a remoção devem atualizar os
+ * ponteiros envolvidos, preservando a ligação entre os nós.
+ *
+ * A busca e o percurso devem seguir os encadeamentos da lista,
+ * partindo do primeiro nó e avançando até encontrar o elemento
+ * procurado ou alcançar o final da estrutura.
+ */
+
 typedef struct lista_enc LISTA_ENC;
 
 // cria e inicializa a lista simplesmente encadeada

@@ -4,6 +4,22 @@
 #include <stdbool.h>
 #include "item.h"
 
+/*
+ * FILA (FIFO)
+ *
+ * A fila organiza os elementos segundo a política FIFO
+ * (First In, First Out), em que o primeiro elemento inserido
+ * é o primeiro a ser removido.
+ *
+ * A inserção deve ocorrer no final da fila e a remoção
+ * no início. A implementação deve manter referências
+ * adequadas ao início e ao final, atualizando-as quando
+ * necessário.
+ *
+ * O percurso deve seguir a ordem de entrada dos elementos,
+ * preservando o comportamento característico de uma fila.
+ */
+
 typedef struct fila FILA;
 
 // cria e inicializa a fila (vetor circular que cresce sozinho)

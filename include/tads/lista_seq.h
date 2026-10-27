@@ -4,6 +4,23 @@
 #include <stdbool.h>
 #include "item.h"
 
+/*
+ * LISTA SEQUENCIAL
+ *
+ * A lista sequencial armazena os elementos em posições
+ * consecutivas de uma estrutura de armazenamento sequencial,
+ * como um vetor alocado dinamicamente.
+ *
+ * Cada elemento deve ser acessível por sua posição lógica.
+ * A inserção e a remoção em posições intermediárias devem
+ * preservar a sequência dos elementos, deslocando os demais
+ * quando necessário.
+ *
+ * A implementação deve controlar a quantidade de elementos
+ * armazenados e a capacidade disponível, tratando o crescimento
+ * do armazenamento quando aplicável.
+ */
+
 typedef struct lista_seq LISTA_SEQ;
 
 
