@@ -10,7 +10,7 @@
 #include "estrutura.h"
 #include "reader_antt.h"
 
-/* Quantidade de execucoes usadas para calcular a mediana dos tempos. */
+/* Quantidade de execucoes usadas para calcular a media dos tempos. */
 #define REPETICOES 5
 
 /* Guarda as contagens e os tempos medidos em uma execucao completa. */
@@ -190,21 +190,17 @@ static int executar_uma_vez(const ConfigCLI *config,
 
 }
 
-/* Calcula a mediana dos tempos sem alterar o vetor original de medicoes. */
-static double mediana(double valores[REPETICOES]) {
-    double ordenados[REPETICOES];
-    for (int i = 0; i < REPETICOES; i++) ordenados[i] = valores[i];
+/*
+ * Calcula a media aritmetica dos tempos das cinco execucoes.
+ */
+static double media(double valores[REPETICOES]) {
+    double soma = 0.0;
 
-    for (int i = 0; i < REPETICOES - 1; i++) {
-        for (int j = 0; j < REPETICOES - 1 - i; j++) {
-            if (ordenados[j] > ordenados[j + 1]) {
-                double temp = ordenados[j];
-                ordenados[j] = ordenados[j + 1];
-                ordenados[j + 1] = temp;
-            }
-        }
+    for (int i = 0; i < REPETICOES; i++) {
+        soma += valores[i];
     }
-    return ordenados[REPETICOES / 2];
+
+    return soma / REPETICOES;
 }
 
 int main(int argc, char *argv[]) {
@@ -242,15 +238,15 @@ int main(int argc, char *argv[]) {
         escritas[i] = medicoes[i].write_ms;
     }
 
-    /* As contagens correspondem a ultima rodada; os tempos exibidos sao as
-       medianas, menos sensiveis a variacoes isoladas entre as execucoes. */
+    /* As contagens correspondem a ultima rodada; os tempos
+   exibidos sao as medias aritmeticas das cinco execucoes. */
     printf("STATUS=OK\n");
     printf("INPUT_RECORDS=%d\n", medicoes[REPETICOES - 1].total_lidos);
     printf("MATCHED_RECORDS=%d\n", medicoes[REPETICOES - 1].matched_records);
     printf("OUTPUT_RECORDS=%d\n", medicoes[REPETICOES - 1].output_records);
-    printf("LOAD_MS=%.3f\n", mediana(loads));
-    printf("SEARCH_MS=%.3f\n", mediana(buscas));
-    printf("RESULT_INSERT_MS=%.3f\n", mediana(insercoes));
-    printf("WRITE_MS=%.3f\n", mediana(escritas));
+    printf("LOAD_MS=%.3f\n", media(loads));
+    printf("SEARCH_MS=%.3f\n", media(buscas));
+    printf("RESULT_INSERT_MS=%.3f\n", media(insercoes));
+    printf("WRITE_MS=%.3f\n", media(escritas));
     return 0;
 }

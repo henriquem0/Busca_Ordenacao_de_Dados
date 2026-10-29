@@ -5,9 +5,9 @@ CC = gcc
 # -d_posix_c_source habilita clock_gettime no c99
 CFLAGS = -Wall -Wextra -std=c99 -pedantic -I include -D_POSIX_C_SOURCE=199309L
 
-BUILD_DIR = trabalho
+BUILD_DIR = build
 
-TARGET = $(BUILD_DIR)/trabalho
+TARGET = trabalho
 
 # objetos dos tads
 TADS_OBJ = $(addprefix $(BUILD_DIR)/, pilha.o fila.o lista_seq.o lista_enc.o lista_cabeca.o lista_ord.o lista_gen.o lista_cruz.o)
@@ -77,7 +77,7 @@ $(BUILD_DIR)/lista_cruz.o: source/tads/lista_cruz.c include/tads/lista_cruz.h in
 
 # executa um exemplo com a base inteira
 run: $(TARGET)
-	./$(TARGET) --reader antt --input dados/autorizacao-investimento-utf8.csv --base lista_cabeca --result lista_cruz --query consultas/q3.txt --output resultado.csv --top-k 10 --limit 1000
+	./$(TARGET) --reader antt --input dados/autorizacao-investimento-utf8.csv --base lista_cabeca --result lista_cruz --query consultas/q4.txt --output resultado.csv --top-k 10 --limit 1000
 
 # remove arquivos gerados
 clean:
